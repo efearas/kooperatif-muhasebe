@@ -1,0 +1,11 @@
+﻿{% extends "koopmuhasebe/main.html" %}
+{% block body %}
+<body>
+    <div id="wrapper">
+		{% include "koopmuhasebe/include-navbar.html" %}
+		<div id="page-wrapper">
+			{% block page-body %}{% endblock%}
+	    </div>	
+	</div>    		
+</body>
+{% endblock %}

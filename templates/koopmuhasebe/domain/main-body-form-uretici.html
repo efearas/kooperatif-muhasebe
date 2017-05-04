@@ -1,0 +1,22 @@
+﻿{% extends "koopmuhasebe/main-body-form.html" %}
+
+{% block form-action %}{{action}}{% endblock %}
+{% block form-details %}
+
+{% load myfilters %}
+<div class="form-group">
+	<label>Üretici Adı</label>
+	{{form.uretici_adi|addclass:'form-control' }}
+</div>
+<div class="form-group">
+	<label>Adres</label>
+	{{form.adres |addclass:'form-control'}}                                                    
+</div>
+
+<div class="form-group">
+	<label>Banka Bilgileri</label>
+	{{form.banka_bilgileri |addclass:'form-control'}}
+</div>
+
+
+{% endblock %}

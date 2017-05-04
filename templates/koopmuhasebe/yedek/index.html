@@ -1,0 +1,9 @@
+{% if urunler_listesi %}
+    <ul>
+    {% for p in urunler_listesi %}
+        <li><a href="/polls/{{ p.id }}/">{{ p.urun_adi }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}

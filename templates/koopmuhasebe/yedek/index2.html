@@ -1,0 +1,14 @@
+{% extends "koopmuhasebe/ana.html" %}
+
+{% block content %}
+{% if urunler_listesi %}
+    <ul>
+    {% for p in urunler_listesi %}
+        <li><a href="/polls/{{ p.id }}/">{{ p.urun_adi }}</a></li>
+		<b>bu da duz html</b>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
+{% endblock %}

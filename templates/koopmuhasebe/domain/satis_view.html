@@ -1,0 +1,246 @@
+﻿{% extends "koopmuhasebe/main-body-form.html" %}
+
+{% block form-action %}{{action}}{% endblock %}
+{% block form-title %}Satış{% endblock %}
+{% block form-details %}
+
+{% load myfilters %}
+{{ form2.management_form }}
+<div class="form-group">
+	<label>Tarih</label>	
+	{{form1.tarih|addclass:'form-control datepicker' }}
+	{{form1.tarih.errors.as_text}}
+</div>
+ 
+ 
+ 
+<div class="form-group">
+ <table class="table" id="tablo-siparis">
+	<thead>
+		<tr>
+			<th>Ürün</th>
+			<th>Birim Fiyat</th>
+			<th>Miktar</th>
+			<th>Tutar</th>
+		</tr>
+
+{{ form2.management_form }}
+{% for f in form2.forms %}
+<tr>
+	<td>		
+        {{f.urun|addclass:'form-control input-sm'}}
+		{{f.urun.errors.as_text}}
+		
+	</td> 
+	<td>
+		<input type=text id="id_satisstokhareketleri_set-{{ forloop.counter0 }}-urun-birim_fiyat" class="form-control input-sm" readonly> 
+		
+       
+	</td> 
+	<td>		
+		<div class="form-group input-group">			
+			{{f.miktar|addclass:'form-control input-sm miktar_kutusu'}}
+			<span id="birim_span_{{ forloop.counter0 }}" class="input-group-addon"></span>
+			{{f.miktar.errors.as_text}}			
+		</div>
+	</td> 
+	<td>		
+        {{f.tutar|addclass:'form-control input-sm'}}
+		{{f.tutar.errors.as_text}}
+	</td> 
+            
+    {% for field in f %}
+		{% if field.is_hidden %}                                     
+			{{ field}}
+        {% endif %}
+	{% endfor %}    
+		
+		
+</tr>
+
+</div>
+{% endfor %}
+
+<tr>
+	<td>		
+        
+	</td> 
+	<td>
+	
+       
+	</td> 
+	<td align="right">		
+        <b>Total:</b>
+	</td> 
+	<td>		
+			<input type=text id="total" class="form-control input-sm" readonly>     
+	</td> 
+            
+    
+		
+		
+</tr>
+
+
+</table>
+
+
+<script type="text/javascript">   
+	
+	$(document).ready(function(){
+	
+		
+		//combodan urun secti
+		$('select').on('change', function() {			
+			idOfCombo=$(this).attr('id');
+			valueOfCombo = $(this).val();
+			idOfComboWithoutUrun = idOfCombo.substring(0, idOfCombo.length-4);
+			idOfBirimFiyatKutusu = idOfComboWithoutUrun +'urun-birim_fiyat';
+						
+			satirSayisi = Number(idOfCombo.match(/\d+/));			
+			birim = getBirimByID(valueOfCombo);
+			if(birim == 'Kg')
+				birim = 'Gr';
+			
+			$("#"+idOfBirimFiyatKutusu).val(getFiyatByID(valueOfCombo));
+			$("#birim_span_" + satirSayisi).text(birim);
+			
+			
+			reCalculate();
+			
+		});
+		
+		//miktar deggisti
+		//$('.miktar_kutusu').on('change', function() {			
+		$('.miktar_kutusu').on('keyup', function() {					
+			reCalculate();
+		});
+		//miktari yukari asagi oklarla da degistirebilir
+		$('.miktar_kutusu').on('change', function() {					
+			reCalculate();
+		});
+	});
+
+	function reCalculate()
+	{
+		runningTotal = 0;
+		for(i=0; i<15; i++)
+		{
+			
+			//id_satisstokhareketleri_set-{{ forloop.counter0 }}-urun-birim_fiyat
+			urun = $("#"+'id_satisstokhareketleri_set-'+ i +'-urun').val();			
+			birimFiyat = $("#"+'id_satisstokhareketleri_set-'+ i +'-urun-birim_fiyat').val();			
+			miktar = $("#"+'id_satisstokhareketleri_set-'+ i +'-miktar').val();
+			birim = $("#"+'birim_span_'+ i ).text();
+			
+			if(birim == 'Gr')
+				tutar = birimFiyat*miktar/1000;
+			else
+				tutar = birimFiyat*miktar;
+			
+			if(!isNaN(tutar))	
+				runningTotal = runningTotal+ tutar;
+			
+			if(!isNaN(urun) && urun != "")
+				$("#"+'id_satisstokhareketleri_set-' + i + '-tutar').val(tutar);
+		}
+		
+		$("#total").val(runningTotal);
+	}
+	
+	function GetTotal()
+	{
+		//kullanilmayan bir fonksiyon
+		runningTotal = 0;
+		for(i=0; i<15; i++)
+		{
+			
+			//id_satisstokhareketleri_set-{{ forloop.counter0 }}-urun-birim_fiyat
+			urun = $("#"+'id_satisstokhareketleri_set-'+ i +'-urun').val();			
+			birimFiyat = $("#"+'id_satisstokhareketleri_set-'+ i +'-urun-birim_fiyat').val();			
+			miktar = $("#"+'id_satisstokhareketleri_set-'+ i +'-miktar').val();
+			birim = $("#"+'birim_span_'+ i ).text();
+			
+			if(birim == 'Gr')
+				tutar = birimFiyat*miktar/1000;
+			else
+				tutar = birimFiyat*miktar;
+			
+			if(!isNaN(tutar))	
+				runningTotal = runningTotal+ tutar;
+			
+			if(!isNaN(urun) && urun != "")
+				$("#"+'id_satisstokhareketleri_set-' + i + '-tutar').val(tutar);
+		}
+		
+		$("#total").val(runningTotal);
+	}
+	
+
+	function editEkranindaSayfaLoadOlurkenBirimFiyatlariGetir()
+	{
+		//comment'e gerek var mi? :)
+		//birimleri de getirmek gerek
+		for(ctr=0; ctr<15; ctr++)
+		{			
+			urunID =  $("#"+'id_satisstokhareketleri_set-'+ ctr +'-urun').val();
+			
+			urunBirimFiyat = getFiyatByID(urunID);
+			if(!isNaN(urunBirimFiyat))	
+				$("#"+'id_satisstokhareketleri_set-' + ctr + '-urun-birim_fiyat').val(urunBirimFiyat);
+			
+			urunBirim2 = getBirimByID(urunID);
+			//if(!isNaN(urunBirim2))
+			if(urunBirim2 != '')
+			{
+				if(urunBirim2 == 'Kg')
+					urunBirim2 = 'Gr';
+				$('#birim_span_' + ctr  ).text(urunBirim2);
+			}
+		}
+	}
+	
+	var arr = [{{urun_fiyat|safe|escape}}];
+	
+	function getFiyatByID(key)
+	{
+		//var arr = ["p1","10.1","p2","20"];		
+				
+		var result;
+		for(i=0;i<arr.length;i=i+3)
+		{
+			if(arr[i] == key)
+			{
+				result = arr[i+1];
+			}
+		}
+		//alert(result);
+		return result;
+	}
+
+	function getBirimByID(key)
+	{
+		//var arr = ["p1","10.1","p2","20"];		
+				
+		var result;
+		for(i=0;i<arr.length;i=i+3)
+		{
+			if(arr[i] == key)
+			{
+				result = arr[i+2];
+			}
+		}
+		//alert(result);
+		return result;
+	}	
+	
+	editEkranindaSayfaLoadOlurkenBirimFiyatlariGetir();
+	reCalculate();
+	
+	
+	
+</script>
+
+
+{% endblock %}
+

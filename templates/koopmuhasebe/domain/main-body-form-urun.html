@@ -1,0 +1,42 @@
+﻿{% extends "koopmuhasebe/main-body-form.html" %}
+
+{% block form-action %}{{action}}{% endblock %}
+{% block form-details %}
+
+{% load myfilters %}
+
+
+{% if form.errors %}
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+
+
+<div class="form-group">
+	<label>Ürün Adı</label>
+	{{form.urun_adi|addclass:'form-control' }}
+</div>
+<div class="form-group">
+	<label>Üretici</label>
+	{{form.uretici |addclass:'form-control'}}                                                    
+</div>
+<div class="form-group">
+	<label>Birim</label>
+	{{form.birim|addclass:'form-control' }}
+</div>
+<div class="form-group">
+	<label>Fiyat</label>
+	{{form.musteri_fiyati|addclass:'form-control' }}
+</div>
+
+{% endblock %}
