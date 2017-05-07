@@ -9,14 +9,12 @@ from django.contrib.auth.decorators import login_required
 from datetime import datetime
 from django.forms.models import inlineformset_factory
 from django.db.models import Sum
-
-
-
+from django.contrib.auth.decorators import permission_required
 
 
 
 ###STOK GİRİŞLERİ
-
+@login_required
 def stok_girisi_yeni(request): 		
 	if request.method == "POST":
 		form = StokGirisiForm(request.POST)
@@ -30,7 +28,7 @@ def stok_girisi_yeni(request):
 	s = UrunFiyatVeBirimleriniGetir()	
 	return render(request, 'koopmuhasebe/domain/main-body-form-stok_girisi.html', {'form': form, 'urun_fiyat' : s,})
 
-
+@login_required
 def stok_girisi_liste(request):
 	stok_girisleri_listesi = StokGirisi.objects.all().order_by('-id')
 	headers = ['Kayıt No','Tarih','Ürün' ,'Miktar',]
@@ -44,6 +42,7 @@ def stok_girisi_liste(request):
 	'yeni_buton_adi':'Yeni Stok Girişi'}
 	return render(request, 'koopmuhasebe/main-body-liste.html',context)
 
+@login_required
 def stok_girisi_edit(request,pk):
 	stokGirisiObj = get_object_or_404(StokGirisi, pk=pk)
 	if request.method == "POST":
@@ -61,7 +60,7 @@ def stok_girisi_edit(request,pk):
 	
 
 ###GİDERLER
-
+@login_required
 def gider_yeni(request): 		
 	if request.method == "POST":
 		form = GiderForm(request.POST)
@@ -73,6 +72,7 @@ def gider_yeni(request):
 		form = GiderForm()		
 	return render(request, 'koopmuhasebe/domain/main-body-form-gider.html', {'form': form})
 
+@login_required
 def gider_edit(request,pk):
 	giderObj = get_object_or_404(Gider, pk=pk)
 	if request.method == "POST":
@@ -85,7 +85,7 @@ def gider_edit(request,pk):
 		form = GiderForm(instance=giderObj)
 	return render(request, 'koopmuhasebe/domain/main-body-form-gider.html', {'form': form})
 
-	
+@login_required	
 def gider_liste(request):
 	gider_listesi = Gider.objects.all().order_by('-id')
 	headers = ['Kayıt No','Tarih','Gider Tipi' ,'Tutar',]
@@ -102,6 +102,7 @@ def gider_liste(request):
 
 
 ###SATIŞ
+@login_required
 def satis_view(request, pk = None):	
 	
 	if pk == None:
@@ -141,6 +142,7 @@ def satis_view(request, pk = None):
 	}
 	return render(request, 'koopmuhasebe/domain/satis_view.html', context)
 
+
 def UrunFiyatVeBirimleriniGetir():
 	urun_fiyatlari = urun.objects.all()
 	s=""
@@ -167,6 +169,8 @@ def satis_liste(request):
 
 ###ÜRÜN
 
+@login_required
+@permission_required("koopmuhasebe.can_change_urun")
 def urun_yeni(request): 		
 	if request.method == "POST":
 		form = UrunForm(request.POST)
@@ -179,6 +183,7 @@ def urun_yeni(request):
 		form = UrunForm()		
 	return render(request, 'koopmuhasebe/domain/main-body-form-urun.html', {'form': form})
 
+@login_required
 def urun_liste(request):
 	urun_listesi = urun.objects.all()
 	headers = ['Kayıt No','Ürün','Üretici','Üye Fiyatı','Müşteri Fiyatı']
@@ -192,6 +197,8 @@ def urun_liste(request):
 	'yeni_buton_adi':'Yeni Ürün'}
 	return render(request, 'koopmuhasebe/main-body-liste.html',context)
 
+@login_required
+@permission_required("koopmuhasebe.can_change_urun")
 def urun_edit(request,pk):
 	urunObj = get_object_or_404(urun, pk=pk)
 	if request.method == "POST":
@@ -207,7 +214,8 @@ def urun_edit(request,pk):
 
 
 ###ÜRETİCİ
-
+@login_required
+@permission_required("koopmuhasebe.can_change_uretici")
 def form_uretici_yeni(request): 		
 	if request.method == "POST":
 		form = UreticiForm(request.POST)
@@ -220,7 +228,8 @@ def form_uretici_yeni(request):
 		form = UreticiForm()
 	return render(request, 'koopmuhasebe/domain/main-body-form-uretici.html', {'form': form})
 
-
+@login_required
+@permission_required("koopmuhasebe.can_change_uretici")
 def form_uretici_edit(request,pk):
 	ureticiObj = get_object_or_404(uretici, pk=pk)
 	if request.method == "POST":
@@ -235,7 +244,7 @@ def form_uretici_edit(request,pk):
 		form = UreticiForm(instance=ureticiObj)
 	return render(request, 'koopmuhasebe/domain/main-body-form-uretici.html', {'form': form})
 
-
+@login_required
 def liste_uretici(request):
 	uretici_listesi = uretici.objects.all()
 	headers = ['Kayıt No','Üretici Adı','Adres']
@@ -249,30 +258,8 @@ def liste_uretici(request):
 	'yeni_buton_adi':'Yeni Üretici'}
 	return render(request, 'koopmuhasebe/main-body-liste.html',context)
 	
-	
-
+@login_required
 def index(request):
-    #return HttpResponse("Hello, world. You're at the polls index.")
 	return redirect('/koopmuhasebe/satis_liste')
-	
-def ButunUrunler(request):
-	urun_listesi = urun.objects.all()
-	output = ', '.join([p.urun_adi for p in urun_listesi])
-	context = {'urunler_listesi': urun_listesi}
-	return render(request, 'koopmuhasebe/index.html', context)
-
-def deneme1(request):
-	urun_listesi = urun.objects.all()	
-	context = {'urunler_listesi': urun_listesi}
-	return render(request, 'koopmuhasebe/index2.html', context)
-
-def ana(request):
-	urun_listesi = uretici.objects.all()
-	headers = ['Üretici Adı','Adres']
-	rows = []
-	for p in urun_listesi:		
-		rows.append([p.uretici_adi,p.adres])	
-	context = {'rows': rows, 'headers': headers,}
-	return render(request, 'koopmuhasebe/page-liste.html',context)
 
 

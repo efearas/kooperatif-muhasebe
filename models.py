@@ -11,6 +11,7 @@ class uretici(models.Model):
 	tarih = models.DateTimeField(auto_now_add=True)
 	def __str__(self):
 		return self.uretici_adi
+	
 
 class Birim(models.Model):
 	birim_adi = models.CharField(max_length=50)
@@ -48,7 +49,7 @@ class StokGirisi(models.Model):
 class Satis(models.Model):
 	tarih = models.DateTimeField()
 	def __str__(self):
-		return self.tarih
+		return str(self.tarih)
 
 class SatisStokHareketleri(models.Model):
 	satis = models.ForeignKey(Satis, on_delete=models.CASCADE)

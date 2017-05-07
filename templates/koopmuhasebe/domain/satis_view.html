@@ -138,8 +138,11 @@
 			else
 				tutar = birimFiyat*miktar;
 			
+			tutar = tutar.toFixed(2);
+			
 			if(!isNaN(tutar))	
-				runningTotal = runningTotal+ tutar;
+				runningTotal = runningTotal+ parseFloat(tutar);
+			
 			
 			if(!isNaN(urun) && urun != "")
 				$("#"+'id_satisstokhareketleri_set-' + i + '-tutar').val(tutar);
@@ -147,35 +150,7 @@
 		
 		$("#total").val(runningTotal);
 	}
-	
-	function GetTotal()
-	{
-		//kullanilmayan bir fonksiyon
-		runningTotal = 0;
-		for(i=0; i<15; i++)
-		{
-			
-			//id_satisstokhareketleri_set-{{ forloop.counter0 }}-urun-birim_fiyat
-			urun = $("#"+'id_satisstokhareketleri_set-'+ i +'-urun').val();			
-			birimFiyat = $("#"+'id_satisstokhareketleri_set-'+ i +'-urun-birim_fiyat').val();			
-			miktar = $("#"+'id_satisstokhareketleri_set-'+ i +'-miktar').val();
-			birim = $("#"+'birim_span_'+ i ).text();
-			
-			if(birim == 'Gr')
-				tutar = birimFiyat*miktar/1000;
-			else
-				tutar = birimFiyat*miktar;
-			
-			if(!isNaN(tutar))	
-				runningTotal = runningTotal+ tutar;
-			
-			if(!isNaN(urun) && urun != "")
-				$("#"+'id_satisstokhareketleri_set-' + i + '-tutar').val(tutar);
-		}
-		
-		$("#total").val(runningTotal);
-	}
-	
+
 
 	function editEkranindaSayfaLoadOlurkenBirimFiyatlariGetir()
 	{
