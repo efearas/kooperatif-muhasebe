@@ -12,10 +12,10 @@ from django.db.models import Sum
 from django.contrib.auth.decorators import permission_required
 
 
-
 ###STOK GİRİŞLERİ
 @login_required
-def stok_girisi_yeni(request): 		
+def stok_girisi_yeni(request):
+#dukkana mal geldi stok girisi yapiyoruz 		
 	if request.method == "POST":
 		form = StokGirisiForm(request.POST)
 		if form.is_valid():
