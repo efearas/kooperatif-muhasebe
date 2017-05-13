@@ -26,6 +26,13 @@ urlpatterns = [
 	url(r'stok_girisi_yeni', views.stok_girisi_yeni, name='stok_girisi_yeni'),
 	url(r'stok_girisi/edit/(?P<pk>\d+)$', views.stok_girisi_edit, name='stok_girisi_edit'),	
 	
+	url(r'virman_liste', views.virman_liste, name='virman_liste'),
+	url(r'virman_yeni', views.virman_yeni, name='virman_yeni'),
+	url(r'virman/edit/(?P<pk>\d+)$', views.virman_edit, name='virman_edit'),	
+	
+	url(r'rapor_stok', views.rapor_stok, name='rapor_stok'),
+	
+	
 	url('^', include('django.contrib.auth.urls')),	
 	url(r'login/$', auth_views.LoginView.as_view(template_name='koopmuhasebe/login.html')),	
 ]

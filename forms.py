@@ -1,5 +1,5 @@
 ﻿from django import forms
-from .models import uretici,urun,Satis, SatisStokHareketleri,Gider, StokGirisi
+from .models import uretici,urun,Satis, SatisStokHareketleri,Gider, StokGirisi, VirmanVeDuzeltme, VirmanVeDuzeltmeHesaplari
 from django.forms.models import inlineformset_factory
 #import datetime
 from datetime import datetime, date, timedelta
@@ -37,6 +37,16 @@ class SatisForm(forms.ModelForm):
 	class Meta:
 		model = Satis		
 		exclude = {}
+
+		
+		
+class VirmanForm(forms.ModelForm):	
+	tarih = forms.DateTimeField(initial=datetime.now)	
+	cikis_hesabi = forms.ModelChoiceField(queryset=VirmanVeDuzeltmeHesaplari.objects.all(),required=False)
+	giris_hesabi = forms.ModelChoiceField(queryset=VirmanVeDuzeltmeHesaplari.objects.all(),required=False)
+	class Meta:
+		model = VirmanVeDuzeltme				
+		exclude = {'kullanici'}
 
 class SatisStokHareketleriForm(forms.ModelForm):
 	urun = forms.ModelChoiceField(queryset=urun.objects.order_by('urun_adi'), required=True)	

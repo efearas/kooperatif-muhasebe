@@ -59,5 +59,16 @@ class SatisStokHareketleri(models.Model):
 	def __str__(self):
 		return self.urun
 
-
+class VirmanVeDuzeltmeHesaplari(models.Model):
+	hesap_adi = models.CharField(max_length=50)
+	def __str__(self):
+		return self.hesap_adi
+		
+class VirmanVeDuzeltme(models.Model):
+	tarih  = models.DateTimeField()
+	cikis_hesabi = models.ForeignKey(VirmanVeDuzeltmeHesaplari, related_name='cikis_hesabi', null=True)
+	giris_hesabi = models.ForeignKey(VirmanVeDuzeltmeHesaplari, related_name='giris_hesabi', null=True)
+	tutar = models.DecimalField(max_digits=7,decimal_places=2)	
+	notlar = models.CharField(max_length=500)
+	kullanici = models.ForeignKey(User, null=True)
 	

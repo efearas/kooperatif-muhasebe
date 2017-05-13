@@ -3,13 +3,73 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
-from .models import urun,uretici,Satis,SatisStokHareketleri,Gider,StokGirisi
-from .forms import UreticiForm,UrunForm, SatisForm, SatisStokHareketleriForm, GiderForm, StokGirisiForm
+from .models import urun,uretici,Satis,SatisStokHareketleri,Gider,StokGirisi,VirmanVeDuzeltme
+from .forms import UreticiForm,UrunForm, SatisForm, SatisStokHareketleriForm, GiderForm, StokGirisiForm, VirmanForm
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
 from django.forms.models import inlineformset_factory
 from django.db.models import Sum
 from django.contrib.auth.decorators import permission_required
+from .reporting import *
+
+###RAPORLAR
+
+def rapor_stok(request):	
+	headers = ['Ürün','Stokta Kalan Miktar',]
+	rows = rapor_stok_durumu()	
+	context = {'rows': rows, 'headers': headers,
+	'title_of_list':'Stok Durumu',		
+	}
+	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
+
+
+
+###Virman Ve Düzeltme
+@login_required
+def virman_yeni(request):
+#dukkana mal geldi stok girisi yapiyoruz 		
+	if request.method == "POST":
+		form = VirmanForm(request.POST)
+		if form.is_valid():
+			virmanObj = form.save(commit=False)
+			virmanObj.kullanici = request.user			
+			virmanObj.save()
+			return redirect('/koopmuhasebe/virman_liste')
+	else:
+		form = VirmanForm()
+	
+	
+	return render(request, 'koopmuhasebe/domain/main-body-form-virman.html', {'form': form,})
+
+@login_required
+def virman_liste(request):
+	virman_listesi = VirmanVeDuzeltme.objects.all().order_by('-id')
+	headers = ['Kayıt No','Tarih','Çıkış Hesabı' ,'Giriş Hesabı', 'Tutar']
+	rows = []
+	for p in virman_listesi:		
+		rows.append([p.id,p.tarih,p.cikis_hesabi,p.giris_hesabi,p.tutar])	
+	context = {'rows': rows, 'headers': headers,
+	'title_of_list':'Virman ve Düzeltmeler',
+	'form_adresi':'virman_yeni',
+	'edit_adresi':'virman/edit/',	
+	'yeni_buton_adi':'Yeni Virman veya Düzeltme Girişi'}
+	return render(request, 'koopmuhasebe/main-body-liste.html',context)
+
+@login_required
+def virman_edit(request,pk):
+	virmanObj = get_object_or_404(VirmanVeDuzeltme, pk=pk)
+	if request.method == "POST":
+		form = VirmanForm(request.POST,instance=virmanObj)
+		if form.is_valid():
+			virmanObj = form.save(commit=False)			
+			virmanObj.kullanici = request.user			
+			form.save()
+			return redirect('/koopmuhasebe/virman_liste',pk=virmanObj.pk)
+	else:
+		form = VirmanForm(instance=virmanObj)
+	
+	
+	return render(request, 'koopmuhasebe/domain/main-body-form-virman.html', {'form': form,})
 
 
 ###STOK GİRİŞLERİ
