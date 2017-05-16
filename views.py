@@ -4,13 +4,16 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from .models import urun,uretici,Satis,SatisStokHareketleri,Gider,StokGirisi,VirmanVeDuzeltme
-from .forms import UreticiForm,UrunForm, SatisForm, SatisStokHareketleriForm, GiderForm, StokGirisiForm, VirmanForm
+from .forms import UreticiForm,UrunForm, SatisForm, SatisStokHareketleriForm, GiderForm, StokGirisiForm, VirmanForm, RaporTarihForm
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
 from django.forms.models import inlineformset_factory
 from django.db.models import Sum
 from django.contrib.auth.decorators import permission_required
 from .reporting import *
+import pdb
+import datetime as dt     
+
 
 ###RAPORLAR
 
@@ -22,6 +25,30 @@ def rapor_stok(request):
 	}
 	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
 
+def rapor_ciro(request):
+	
+	rows=''
+	form = RaporTarihForm()
+	if request.method == "POST":
+			form = RaporTarihForm(request.POST)
+			if form.is_valid():
+				cd = form.cleaned_data #a = cd.get('a')
+				baslangicTarihi = cd.get('baslangicTarihi')
+				bitisTarihi = cd.get('bitisTarihi')
+				rows = rapor_ciro_durumu(baslangicTarihi, bitisTarihi)	
+				#pdb.set_trace()					
+	else:
+		rows = rapor_ciro_durumu(dt.datetime.today().strftime("%Y-%m-%d"), dt.datetime.today().strftime("%Y-%m-%d"))	
+	#rows = rapor_stok_durumu()	
+	headers = ['Tarih','Ciro',]	
+	context = {'rows': rows, 
+	'headers': headers,
+	'title_of_list':'Ciro',		
+	'action':'rapor_ciro',
+	'form': form,
+	}
+	return render(request, 'koopmuhasebe/main-body-rapor-tarihli.html',context)
+	
 
 
 ###Virman Ve Düzeltme

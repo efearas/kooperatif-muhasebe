@@ -31,6 +31,7 @@ urlpatterns = [
 	url(r'virman/edit/(?P<pk>\d+)$', views.virman_edit, name='virman_edit'),	
 	
 	url(r'rapor_stok', views.rapor_stok, name='rapor_stok'),
+	url(r'rapor_ciro', views.rapor_ciro, name='rapor_ciro'),
 	
 	
 	url('^', include('django.contrib.auth.urls')),	

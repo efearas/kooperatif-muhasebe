@@ -3,6 +3,7 @@ from .models import uretici,urun,Satis, SatisStokHareketleri,Gider, StokGirisi, 
 from django.forms.models import inlineformset_factory
 #import datetime
 from datetime import datetime, date, timedelta
+from django.forms import extras
 #from django.contrib.admin.widgets import AdminDateWidget
 #from django.forms.fields import DateField
 
@@ -55,4 +56,10 @@ class SatisStokHareketleriForm(forms.ModelForm):
 	class Meta:
 		model = SatisStokHareketleri		
 		exclude = {}
+
+class RaporTarihForm(forms.Form):
+	baslangicTarihi = forms.DateField(widget=extras.SelectDateWidget,initial=datetime.today)
+	bitisTarihi = forms.DateField(widget=extras.SelectDateWidget,initial=datetime.today)
+	
+	
 		

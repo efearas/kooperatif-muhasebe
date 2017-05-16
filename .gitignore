@@ -1,0 +1,5 @@
+static/
+okubeni.txt
+migrations/
+__pycache__/
+queries/
