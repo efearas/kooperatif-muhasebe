@@ -141,7 +141,7 @@
 			birim = $("#"+'birim_span_'+ i ).text();
 			
 			if(birim == 'Gr')
-				tutar = birimFiyat*miktar/1000;
+				tutar = Math.ceil(birimFiyat*miktar/1000);
 			else
 				tutar = birimFiyat*miktar;
 			
