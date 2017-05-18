@@ -13,15 +13,28 @@
 				<form role="form" action="{{action}}" method="post">
 				{% csrf_token %}
 				{% load myfilters %}
-						<div class="form-group">
-							<label>Başlangıç Tarihi</label>
-							{{form.baslangicTarihi}}
+						<label>Başlangıç Tarihi</label>{{form.baslangicTarihi.errors.as_text}}
+						<div class='form-group input-group' id='datetimepicker1'>
+							{{form.baslangicTarihi|addwidgets:"class:form-control"}}
+							
+							<span class="input-group-addon">
+								<span class="glyphicon glyphicon-calendar"></span>
+							</span>
 						</div>
-						<div class="form-group">
-							<label>Bitiş Tarihi</label>
-							{{form.bitisTarihi}}
+						
+						<label>Bitiş Tarihi</label>{{form.bitisTarihi.errors.as_text}}
+						<div class='form-group input-group' id='datetimepicker2'>
+							{{form.bitisTarihi|addwidgets:"class:form-control"}}
+							
+							<span class="input-group-addon">
+								<span class="glyphicon glyphicon-calendar"></span>
+							</span>
 						</div>
-						<button type="submit" class="btn btn-default">Raporla</button>                                            
+						
+						
+						<div class='form-group input-group'>
+							<button type="submit" class="btn btn-default">Raporla</button>    
+						</div>	
 				</form>
                 </div>
             </div>
@@ -84,4 +97,26 @@
 	
 
     </script>
+	
+	<script type="text/javascript">
+            $(function () {
+                $('#datetimepicker1').datetimepicker(
+				{
+					
+					format : 'YYYY-MM-DD',
+					
+				}
+				
+				);
+				
+				 $('#datetimepicker2').datetimepicker(
+				{
+					
+					format : 'YYYY-MM-DD',
+					
+				}
+				
+				);
+            });
+</script>
 {% endblock %}

@@ -33,6 +33,7 @@ urlpatterns = [
 	url(r'rapor_stok', views.rapor_stok, name='rapor_stok'),
 	url(r'rapor_ciro', views.rapor_ciro, name='rapor_ciro'),
 	
+	url(r'test', views.test, name='test'),
 	
 	url('^', include('django.contrib.auth.urls')),	
 	url(r'login/$', auth_views.LoginView.as_view(template_name='koopmuhasebe/login.html')),	

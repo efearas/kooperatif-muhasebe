@@ -21,11 +21,16 @@
     {% endfor %}
 {% endif %}
 
+<label>Tarih</label>
 
-<div class="form-group">
-	<label>Tarih</label>
-	{{form.tarih|addclass:'form-control'}}
-</div>
+	<div class='form-group input-group' id='datetimepicker1'>	
+							{{form.tarih|addwidgets:"class:form-control"}}
+							
+							<span class="input-group-addon">
+								<span class="glyphicon glyphicon-calendar"></span>
+							</span>
+						</div>
+
 <div class="form-group">
 	<label>Çıkış Hesabı</label>
 	{{form.cikis_hesabi|addclass:'form-control'}}                                                    
@@ -42,5 +47,20 @@
 	<label>Notlar</label>
 	{{form.notlar|addclass:'form-control'}}
 </div>
+
+<script type="text/javascript">
+            $(function () {
+                $('#datetimepicker1').datetimepicker(
+				{
+					
+					format : 'YYYY-MM-DD hh:mm',
+					
+				}
+				
+				);
+				
+				
+            });
+</script>
 
 {% endblock %}

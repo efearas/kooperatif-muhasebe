@@ -7,9 +7,16 @@
 {% load myfilters %}
 {{ form2.management_form }}
 <div class="form-group">
-	<label>Tarih</label>	
-	{{form1.tarih|addclass:'form-control datepicker' }}
-	{{form1.tarih.errors.as_text}}
+	<label>Tarih</label>
+	<div class='input-group' id='datetimepicker1'>
+		{{form1.tarih|addwidgets:"class:form-control"}}
+		{{form1.tarih.errors.as_text}}
+		<span class="input-group-addon">
+			<span class="glyphicon glyphicon-calendar"></span>
+        </span>
+	</div>
+  
+		
 </div>
  
  
@@ -216,6 +223,18 @@
 	
 </script>
 
+<script type="text/javascript">
+            $(function () {
+                $('#datetimepicker1').datetimepicker(
+				{
+					
+					format : 'YYYY-MM-DD hh:mm',
+					keepInvalid : true,
+				}
+				
+				);
+            });
+</script>
 
 {% endblock %}
 

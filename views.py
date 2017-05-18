@@ -15,6 +15,10 @@ import pdb
 import datetime as dt     
 
 
+
+def test(request):	
+	return render(request, 'koopmuhasebe/test.html')
+
 ###RAPORLAR
 
 def rapor_stok(request):	
@@ -29,14 +33,16 @@ def rapor_ciro(request):
 	
 	rows=''
 	form = RaporTarihForm()
+	#pdb.set_trace()
 	if request.method == "POST":
 			form = RaporTarihForm(request.POST)
 			if form.is_valid():
 				cd = form.cleaned_data #a = cd.get('a')
 				baslangicTarihi = cd.get('baslangicTarihi')
 				bitisTarihi = cd.get('bitisTarihi')
+				#pdb.set_trace()
 				rows = rapor_ciro_durumu(baslangicTarihi, bitisTarihi)	
-				#pdb.set_trace()					
+								
 	else:
 		rows = rapor_ciro_durumu(dt.datetime.today().strftime("%Y-%m-%d"), dt.datetime.today().strftime("%Y-%m-%d"))	
 	#rows = rapor_stok_durumu()	

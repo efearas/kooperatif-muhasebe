@@ -58,8 +58,8 @@ class SatisStokHareketleriForm(forms.ModelForm):
 		exclude = {}
 
 class RaporTarihForm(forms.Form):
-	baslangicTarihi = forms.DateField(widget=extras.SelectDateWidget,initial=datetime.today)
-	bitisTarihi = forms.DateField(widget=extras.SelectDateWidget,initial=datetime.today)
+	baslangicTarihi = forms.DateField(initial=datetime.today)
+	bitisTarihi = forms.DateField(initial=datetime.today)
 	
 	
 		
