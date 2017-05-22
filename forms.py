@@ -6,6 +6,11 @@ from datetime import datetime, date, timedelta
 from django.forms import extras
 #from django.contrib.admin.widgets import AdminDateWidget
 #from django.forms.fields import DateField
+from django.forms import ModelChoiceField
+
+class UrunUreticiModelChoiceField(ModelChoiceField):
+	def label_from_instance(self, obj):		
+		return (obj.urun_adi + ' :: '+ obj.uretici.uretici_adi)
 
 class UrunForm(forms.ModelForm):	
     class Meta:
@@ -50,7 +55,8 @@ class VirmanForm(forms.ModelForm):
 		exclude = {'kullanici'}
 
 class SatisStokHareketleriForm(forms.ModelForm):
-	urun = forms.ModelChoiceField(queryset=urun.objects.order_by('urun_adi'), required=True)	
+	urun = UrunUreticiModelChoiceField(queryset=urun.objects.order_by('urun_adi'), required=True)	
+	#urun = forms.ModelChoiceField(queryset=urun.objects.order_by('urun_adi'), required=True)	
 	tutar = forms.CharField(widget=forms.TextInput(attrs={'readonly':'readonly'})
 )
 	class Meta:

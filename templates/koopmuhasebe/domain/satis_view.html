@@ -35,7 +35,7 @@
 {% for f in form2.forms %}
 <tr>
 	<td>		
-        {{f.urun|addclass:'form-control input-sm'}}
+        {{f.urun|addclass:'form-control input-md'}}
 		{{f.urun.errors.as_text}}
 		
 	</td> 
@@ -218,7 +218,7 @@
 	
 	editEkranindaSayfaLoadOlurkenBirimFiyatlariGetir();
 	reCalculate();
-	
+	document.getElementById("id_satisstokhareketleri_set-0-urun").focus();
 	
 	
 </script>

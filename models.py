@@ -37,7 +37,7 @@ class urun(models.Model):
 	musteri_fiyati = models.DecimalField(null=True,   max_digits=7,decimal_places=2)
 	birim = models.ForeignKey(Birim, null=True)
 	def __str__(self):
-		return self.urun_adi
+		return self.urun_adi + " :: " + self.uretici.uretici_adi
 
 class StokGirisi(models.Model):
 	tarih = models.DateTimeField()
