@@ -21,7 +21,10 @@
     {% endfor %}
 {% endif %}
 
-
+<div class="form-group">
+	<label>Ürün Kategorisi</label>
+	{{form.urun_kategorisi |addclass:'form-control'}}                                                    
+</div>
 <div class="form-group">
 	<label>Ürün Adı</label>
 	{{form.urun_adi|addclass:'form-control' }}
@@ -35,8 +38,15 @@
 	{{form.birim|addclass:'form-control' }}
 </div>
 <div class="form-group">
-	<label>Fiyat</label>
+	<label>Adet Fiyatı</label>
 	{{form.musteri_fiyati|addclass:'form-control' }}
 </div>
-
+<div class="form-group">
+	<label>KDV Oranı (%)</label>
+	{{form.kdv_orani|addclass:'form-control' }}
+</div>
+<div class="form-group">
+	<label>Dayanışma Ürünü</label>
+	{{form.dayanisma_urunu|addclass:'form-control' }}
+</div>
 {% endblock %}

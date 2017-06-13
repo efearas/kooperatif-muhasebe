@@ -15,7 +15,7 @@ class UrunUreticiModelChoiceField(ModelChoiceField):
 class UrunForm(forms.ModelForm):	
     class Meta:
         model = urun
-        fields = ('urun_adi', 'uretici','musteri_fiyati','birim')
+        fields = ('urun_adi', 'uretici','musteri_fiyati','birim', 'kdv_orani','dayanisma_urunu','urun_kategorisi')
 
 class GiderForm(forms.ModelForm):
 	tarih = forms.DateTimeField(initial=datetime.now)	
@@ -27,9 +27,11 @@ class GiderForm(forms.ModelForm):
 class StokGirisiForm(forms.ModelForm):
 	tarih = forms.DateTimeField(initial=datetime.now)		
 	notlar = forms.CharField( widget=forms.Textarea )
+	urun = forms.ModelChoiceField(queryset=urun.objects.order_by('urun_adi'), required=True)	
+	agirlik = forms.DecimalField(required=False)
 	class Meta:
 		model = StokGirisi
-		fields = ('tarih', 'urun','miktar','notlar')
+		fields = ('tarih', 'urun','miktar','notlar','agirlik','stok_hareketi_tipi')
 
 
 		
@@ -42,7 +44,7 @@ class SatisForm(forms.ModelForm):
 	tarih = forms.DateTimeField(initial=datetime.now)	
 	class Meta:
 		model = Satis		
-		exclude = {}
+		exclude = {'kullanici'}
 
 		
 		
@@ -57,8 +59,7 @@ class VirmanForm(forms.ModelForm):
 class SatisStokHareketleriForm(forms.ModelForm):
 	urun = UrunUreticiModelChoiceField(queryset=urun.objects.order_by('urun_adi'), required=True)	
 	#urun = forms.ModelChoiceField(queryset=urun.objects.order_by('urun_adi'), required=True)	
-	tutar = forms.CharField(widget=forms.TextInput(attrs={'readonly':'readonly'})
-)
+	#tutar = forms.CharField(widget=forms.TextInput(attrs={'readonly':'readonly'})
 	class Meta:
 		model = SatisStokHareketleri		
 		exclude = {}

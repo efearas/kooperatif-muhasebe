@@ -205,11 +205,13 @@ def satis_view(request, pk = None):
 	
 	satisStokHareketleriFormSet = inlineformset_factory(Satis, SatisStokHareketleri, form=SatisStokHareketleriForm, fields=('urun','miktar','tutar'), extra = 6)	
 	
-	if request.method == "POST":
-		satisForm = SatisForm(request.POST, instance = satis)
+	if request.method == "POST":		
+		satisForm = SatisForm(request.POST, instance = satis)		
 		satisHareketleri = satisStokHareketleriFormSet(request.POST, instance = satis)		
-		if satisForm.is_valid() and satisHareketleri.is_valid():
-			satisForm.save()
+		if satisForm.is_valid() and satisHareketleri.is_valid():			
+			satis = satisForm.save(commit=False)
+			satis.kullanici = request.user
+			satis.save()			
 			objeler2 = satisHareketleri.save(commit=False)			
 			for obje in objeler2:
 				if(obje.tutar != 0):
@@ -240,17 +242,17 @@ def UrunFiyatVeBirimleriniGetir():
 	urun_fiyatlari = urun.objects.all()
 	s=""
 	for urun_fiyat in urun_fiyatlari:
-		s = s + "'" + str(urun_fiyat.id) + "'," + "'" + str(urun_fiyat.musteri_fiyati) + "'," + "'" + str(urun_fiyat.birim) + "',"
+		s = s + "'" + str(urun_fiyat.id) + "'," + "'" + str(urun_fiyat.musteri_fiyati) + "'," + "'" + str(urun_fiyat.birim) + "'," + "'" + str(urun_fiyat.kdv_orani) + "',"
 	return s	
 
 	
 @login_required
 def satis_liste(request):	
 	satis_listesi = Satis.objects.all().order_by('-id').annotate(toplamTutar=Sum('satisstokhareketleri__tutar'))
-	headers = ['Kayıt No','Tarih','Tutar',]
+	headers = ['Kayıt No','Tarih','Tutar','Kullanici',]
 	rows = []
 	for p in satis_listesi:		
-		rows.append([p.id,p.tarih,p.toplamTutar,])	
+		rows.append([p.id,p.tarih,p.toplamTutar,p.kullanici,])	
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Satışlar',
 	'form_adresi':'satis_view',
