@@ -22,10 +22,13 @@ def test(request):
 ###RAPORLAR
 
 def rapor_stok(request):	
-	headers = ['Ürün','Stokta Kalan Miktar',]
-	rows = rapor_stok_durumu()	
-	context = {'rows': rows, 'headers': headers,
-	'title_of_list':'Stok Durumu',		
+	headers = ['Ürün','Stokta Kalan Miktar','Birim Fiyat', 'Toplam Değer']
+	tuple = rapor_stok_durumu()	
+	context = {
+	'rows': tuple[0],
+	'headers': headers,
+	'title_of_list':'Stok Durumu',
+	'yekun' : tuple[1],	
 	}
 	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
 

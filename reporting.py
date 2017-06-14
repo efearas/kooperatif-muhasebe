@@ -15,17 +15,21 @@ def rapor_stok_durumu():
 				GROUP BY urun_id	
 			)
 
-			SELECT  koopmuhasebe_urun.urun_adi, UnionedTableGrouped.miktar FROM UnionedTableGrouped
+			SELECT  koopmuhasebe_urun.urun_adi, UnionedTableGrouped.miktar,koopmuhasebe_urun.musteri_fiyati, (UnionedTableGrouped.miktar * koopmuhasebe_urun.musteri_fiyati) as urunToplamDegeri FROM UnionedTableGrouped
 			INNER JOIN koopmuhasebe_urun
 			ON UnionedTableGrouped.urun_id = koopmuhasebe_urun.id
 			ORDER BY UnionedTableGrouped.miktar ASC
 			"""
+	yekun = 0
 	with connection.cursor() as cursor:
 		cursor.execute(query)
 		rows = []
 		for row in cursor.fetchall():
-			rows.append([row[0],row[1],])				
-	return rows
+			rows.append([row[0],row[1],row[2],row[3],])
+			yekun = yekun + row[3]
+	lastRow = (0,0,0,yekun)
+	tuple = (rows,lastRow)
+	return tuple
 
 def rapor_ciro_durumu(baslangicTarihi, bitisTarihi):
 	baslangicTarihi = str(baslangicTarihi) + ' 00:00:00'

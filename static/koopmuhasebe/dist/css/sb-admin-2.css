@@ -8,6 +8,7 @@ body {
 }
 #wrapper {
   width: 100%;
+  line-height : 0.3;
 }
 #page-wrapper {
   padding: 0 15px;
@@ -17,10 +18,17 @@ body {
 @media (min-width: 768px) {
   #page-wrapper {
     position: inherit;
-    margin: 0 0 0 250px;
+    margin: 0 0 0 150px;
     padding: 0 30px;
     border-left: 1px solid #e7e7e7;
   }
+}
+.navbar{
+	min-height: 0px;
+}
+.nav
+{
+	margin-bottom: 10;
 }
 .navbar-top-links {
   margin-right: 0;
@@ -32,8 +40,8 @@ body {
   margin-right: 15px;
 }
 .navbar-top-links li a {
-  padding: 15px;
-  min-height: 50px;
+  padding: 0px;
+  min-height: 0px;
 }
 .navbar-top-links .dropdown-menu li {
   display: block;
@@ -103,7 +111,7 @@ body {
   .sidebar {
     z-index: 1;
     position: absolute;
-    width: 250px;
+    width: 150px;
     margin-top: 51px;
   }
   .navbar-top-links .dropdown-messages,
