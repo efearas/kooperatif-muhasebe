@@ -37,4 +37,6 @@ urlpatterns = [
 	
 	url('^', include('django.contrib.auth.urls')),	
 	url(r'login/$', auth_views.LoginView.as_view(template_name='koopmuhasebe/login.html')),	
+    url(r'^password_reset/$', auth_views.password_reset, name='password_reset'),
+
 ]

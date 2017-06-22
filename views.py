@@ -13,10 +13,14 @@ from django.contrib.auth.decorators import permission_required
 from .reporting import *
 import pdb
 import datetime as dt     
+from django.core.mail import EmailMessage
+from django.core.mail import send_mail
 
 
-
-def test(request):	
+def test(request):
+	#email = EmailMessage('Subject 2', 'Body 123', to=['arasefe@gmail.com'])
+	send_mail('Subject here', 'Here is the message.', 'muhasebe@kadikoykoop.org', ['arasefe@gmail.com'], fail_silently=False)
+	#email.send()
 	return render(request, 'koopmuhasebe/test.html')
 
 ###RAPORLAR

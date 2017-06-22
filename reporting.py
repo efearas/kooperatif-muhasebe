@@ -30,6 +30,41 @@ def rapor_stok_durumu():
 	lastRow = (0,0,0,yekun)
 	tuple = (rows,lastRow)
 	return tuple
+	
+	
+def stogu_azalan_urunler():
+	query = """
+	WITH
+	UrunStokHareketleriUnion AS(	
+		select urun_id,(miktar*-1) as miktar from koopmuhasebe_satisstokhareketleri
+		UNION
+		select urun_id,miktar from koopmuhasebe_stokgirisi	
+	),
+	UrunBazindaStokDurumu AS(	
+		select urun_id,SUM(miktar) as miktar from UrunStokHareketleriUnion
+		GROUP BY urun_id	
+	),
+	Son1SaatIcindeSatilanUrunler AS(
+		select urun_id,urun_adi from koopmuhasebe_satis
+		INNER JOIN koopmuhasebe_satisstokhareketleri ON koopmuhasebe_satis.id = koopmuhasebe_satisstokhareketleri.satis_id
+		INNER JOIN koopmuhasebe_urun ON koopmuhasebe_satisstokhareketleri.urun_id = koopmuhasebe_urun.id
+		WHERE tarih >= NOW() - '1 month'::INTERVAL
+	)
+
+	SELECT  Son1SaatIcindeSatilanUrunler.urun_adi FROM Son1SaatIcindeSatilanUrunler
+	INNER JOIN UrunBazindaStokDurumu
+	ON UrunBazindaStokDurumu.urun_id = Son1SaatIcindeSatilanUrunler.urun_id
+	WHERE miktar < 5
+	GROUP BY Son1SaatIcindeSatilanUrunler.urun_adi
+	"""
+	
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = []
+		for row in cursor.fetchall():
+			rows.append([row[0],])				
+	return rows
+
 
 def rapor_ciro_durumu(baslangicTarihi, bitisTarihi):
 	baslangicTarihi = str(baslangicTarihi) + ' 00:00:00'
