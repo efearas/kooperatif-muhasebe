@@ -50,8 +50,9 @@
 		<div class="form-group input-group">			
 			{{f.miktar|addclass:'form-control input-md miktar_kutusu'}}
 			<span id="birim_span_{{ forloop.counter0 }}" class="input-group-addon">Adet</span>
-			{{f.miktar.errors.as_text}}			
+			
 		</div>
+		{{f.miktar.errors.as_text}}			
 	</td> 
 	<td>		
         {{f.tutar|addclass:'form-control input-md tutar_kutusu'}}
@@ -202,11 +203,20 @@
 				//runningTotal = runningTotal+ parseFloat(tutar);
 			
 			
-			if(!isNaN(urun) && urun != "" && tutar != 0)
+			//if(!isNaN(urun) && urun != "" && tutar != 0)
+			if(!isNaN(urun) && urun != "")
 			{
 				$("#"+'id_satisstokhareketleri_set-' + i + '-tutar').val(tutar);
 				
 			}
+			
+			if(urun == "")
+			{
+				$("#"+'id_satisstokhareketleri_set-' + i + '-urun-birim_fiyat').val("");
+				$("#"+'id_satisstokhareketleri_set-' + i + '-miktar').val("");
+				$("#"+'id_satisstokhareketleri_set-' + i + '-tutar').val("");
+			}
+			
 			
 			//hesaplanan degil Tutat kutusuna elle yazilan rakam
 			kutudakiTutar = $("#"+'id_satisstokhareketleri_set-' + i + '-tutar').val();
@@ -250,13 +260,13 @@
 	{
 		//comment'e gerek var mi? :)
 		//birimleri de getirmek gerek
-		for(ctr=0; ctr<15; ctr++)
+		for(sayac_edit=0; sayac_edit<15; sayac_edit++)
 		{			
-			urunID =  $("#"+'id_satisstokhareketleri_set-'+ ctr +'-urun').val();
+			urunID =  $("#"+'id_satisstokhareketleri_set-'+ sayac_edit +'-urun').val();
 			
 			urunBirimFiyat = getFiyatByID(urunID);
 			if(!isNaN(urunBirimFiyat))	
-				$("#"+'id_satisstokhareketleri_set-' + ctr + '-urun-birim_fiyat').val(urunBirimFiyat);
+				$("#"+'id_satisstokhareketleri_set-' + sayac_edit + '-urun-birim_fiyat').val(urunBirimFiyat);
 			
 			urunBirim2 = getBirimByID(urunID);
 			//if(!isNaN(urunBirim2))
@@ -264,7 +274,7 @@
 			{
 				if(urunBirim2 == 'Kg')
 					urunBirim2 = 'Gr';
-				$('#birim_span_' + ctr  ).text(urunBirim2);
+				$('#birim_span_' + sayac_edit  ).text(urunBirim2);
 			}
 		}
 	}

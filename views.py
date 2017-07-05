@@ -25,6 +25,7 @@ def test(request):
 
 ###RAPORLAR
 
+@login_required
 def rapor_stok(request):	
 	headers = ['Ürün','Stokta Kalan Miktar','Birim Fiyat', 'Toplam Değer']
 	tuple = rapor_stok_durumu()	
@@ -36,6 +37,7 @@ def rapor_stok(request):
 	}
 	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
 
+@login_required
 def rapor_ciro(request):
 	
 	rows=''
