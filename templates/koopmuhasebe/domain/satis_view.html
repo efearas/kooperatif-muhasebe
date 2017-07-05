@@ -204,7 +204,7 @@
 			
 			
 			//if(!isNaN(urun) && urun != "" && tutar != 0)
-			if(!isNaN(urun) && urun != "")
+			if(!isNaN(urun) && urun != "" && birim != 'Kg')
 			{
 				$("#"+'id_satisstokhareketleri_set-' + i + '-tutar').val(tutar);
 				
@@ -270,12 +270,13 @@
 			
 			urunBirim2 = getBirimByID(urunID);
 			//if(!isNaN(urunBirim2))
-			if(urunBirim2 != '')
+			
+			/*if(urunBirim2 != '')
 			{
 				if(urunBirim2 == 'Kg')
 					urunBirim2 = 'Gr';
 				$('#birim_span_' + sayac_edit  ).text(urunBirim2);
-			}
+			}*/
 		}
 	}
 	
