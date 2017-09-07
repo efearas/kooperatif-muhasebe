@@ -24,6 +24,7 @@ def test(request):
 	return render(request, 'koopmuhasebe/test.html')
 
 ###RAPORLAR
+#test2
 
 @login_required
 def rapor_stok(request):	
