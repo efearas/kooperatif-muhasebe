@@ -1,3 +1,5 @@
+	# -*- coding: utf-8 -*-
+
 # Create your views here.
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -87,10 +89,10 @@ def virman_yeni(request):
 @login_required
 def virman_liste(request):
 	virman_listesi = VirmanVeDuzeltme.objects.all().order_by('-id')
-	headers = ['Kayıt No','Tarih','Çıkış Hesabı' ,'Giriş Hesabı', 'Tutar']
+	headers = ['Kayıt No','Tarih','Çıkış Hesabı' ,'Giriş Hesabı', 'Tutar', 'Kullanıcı',]
 	rows = []
 	for p in virman_listesi:		
-		rows.append([p.id,p.tarih,p.cikis_hesabi,p.giris_hesabi,p.tutar])	
+		rows.append([p.id,p.tarih,p.cikis_hesabi,p.giris_hesabi,p.tutar, p.kullanici,])
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Virman ve Düzeltmeler',
 	'form_adresi':'virman_yeni',
