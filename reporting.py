@@ -7,7 +7,7 @@ def rapor_stok_durumu():
 	query = """WITH
 			UnionedTable AS(	
 				select urun_id,(miktar*-1) as miktar from koopmuhasebe_satisstokhareketleri
-				UNION
+				UNION ALL
 				select urun_id,miktar from koopmuhasebe_stokgirisi	
 			),
 			UnionedTableGrouped AS(	
