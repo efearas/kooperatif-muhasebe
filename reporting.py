@@ -15,7 +15,7 @@ def rapor_stok_durumu():
 				GROUP BY urun_id	
 			)
 
-			SELECT  koopmuhasebe_urun.urun_adi, UnionedTableGrouped.miktar,koopmuhasebe_urun.musteri_fiyati, (UnionedTableGrouped.miktar * koopmuhasebe_urun.musteri_fiyati) as urunToplamDegeri FROM UnionedTableGrouped
+			SELECT  koopmuhasebe_urun.id ,koopmuhasebe_urun.urun_adi, UnionedTableGrouped.miktar,koopmuhasebe_urun.musteri_fiyati, (UnionedTableGrouped.miktar * koopmuhasebe_urun.musteri_fiyati) as urunToplamDegeri FROM UnionedTableGrouped
 			INNER JOIN koopmuhasebe_urun
 			ON UnionedTableGrouped.urun_id = koopmuhasebe_urun.id
 			ORDER BY UnionedTableGrouped.miktar ASC
@@ -25,9 +25,33 @@ def rapor_stok_durumu():
 		cursor.execute(query)
 		rows = []
 		for row in cursor.fetchall():
-			rows.append([row[0],row[1],row[2],row[3],])
-			yekun = yekun + row[3]
-	lastRow = (0,0,0,yekun)
+			rows.append([row[0],row[1],row[2],row[3],row[4],])
+			yekun = yekun + row[4]
+	lastRow = (0,0,0,0,yekun)
+	tuple = (rows,lastRow)
+	return tuple
+
+def rapor_urun_satis_haftalik(urunID):
+	query = """SELECT 
+				date_part('year', tarih::date) as yearly,
+				date_part('week', tarih::date) AS weekly,
+				SUM(miktar)
+			FROM koopmuhasebe_satis 
+			INNER JOIN koopmuhasebe_satisstokhareketleri
+			ON koopmuhasebe_satisstokhareketleri.satis_id = koopmuhasebe_satis.id 
+			WHERE urun_id = {urunID}
+			GROUP BY yearly, weekly 
+			ORDER BY yearly, weekly;
+			"""
+	query = query.format(urunID=urunID)
+	
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = []
+		for row in cursor.fetchall():
+			rows.append([ int(row[0]), int(row[1]),row[2],])
+			#pdb.set_trace()			
+	lastRow = (0,0,0,0)
 	tuple = (rows,lastRow)
 	return tuple
 	
