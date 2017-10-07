@@ -30,7 +30,7 @@ def test(request):
 
 @login_required
 def rapor_stok(request):	
-	headers = ['Ürün','Stokta Kalan Miktar','Birim Fiyat', 'Toplam Değer']
+	headers = ['Ürün ID','Ürün','Stokta Kalan Miktar','Birim Fiyat', 'Toplam Değer']
 	tuple = rapor_stok_durumu()	
 	context = {
 	'rows': tuple[0],
