@@ -1,10 +1,68 @@
+# -*- coding: utf-8 -*-
 from django.db import connection
 import pdb
+import datetime
 
+
+def rapor_aylik_urun_satis():
+	# son 6 aydaki urun bazinda satislar
+	# son 6 ay oldugunu kabul edince kolon sayisi sabitleniyor.
+	raporBaslangicTarihi = datetime.date(2017,6,1) 
+	query = """
+			SELECT  date_part('year', tarih) as yil, date_part('month', tarih) as ay,  urun_adi, sum(miktar),urun_id 
+			FROM koopmuhasebe_satisstokhareketleri
+			INNER JOIN koopmuhasebe_satis ON koopmuhasebe_satisstokhareketleri.satis_id = koopmuhasebe_satis.id
+			INNER JOIN koopmuhasebe_urun ON koopmuhasebe_satisstokhareketleri.urun_id = koopmuhasebe_urun.id
+            WHERE tarih > '{baslangicTarihi}'
+            GROUP BY yil,ay, urun_adi,urun_id
+            ORDER BY yil, ay ASC
+			"""
+	strBaslangicTarihi = raporBaslangicTarihi.strftime("%Y-%m-%d %H:%M")
+	query = query.format(baslangicTarihi=strBaslangicTarihi)
+	dicUrunAy = {}
+	dicUrunler = {}
+	dicAylar = {}
+	listAylar = []
+
+	with connection.cursor() as cursor:
+		cursor.execute(query)		
+		for row in cursor.fetchall():
+			yilAy = str(int(row[0]) ) + '-' + str(int(row[1]))
+			if not yilAy in dicAylar:
+				dicAylar[yilAy]=0 #value onemli degil
+				listAylar.append(yilAy)
+			if not row[4] in dicUrunler:
+				dicUrunler[row[4]] = row[2]
+
+			urunAyStr = yilAy + '-' + str(row[4])
+			dicUrunAy[urunAyStr] = row[3]
+
+	# Header kismi
+	header = []
+	header.append("Ürün Adı")
+	for t in listAylar:
+		header.append(t)
+
+	rows = []
+
+	for urun in dicUrunler:
+			row = []
+			row.append(dicUrunler[urun])
+			for t in listAylar:
+				strAyUrun = t + '-' + str(urun)
+				if strAyUrun in dicUrunAy:
+					row.append( str(dicUrunAy[strAyUrun]) )
+				else:
+					row.append('-')
+			rows.append(row)
+
+	tuple = (rows,header)
+	return tuple
 
 
 def rapor_stok_durumu():
-	query = """WITH
+	query = """
+			WITH
 			UnionedTable AS(	
 				select urun_id,(miktar*-1) as miktar from koopmuhasebe_satisstokhareketleri
 				UNION ALL

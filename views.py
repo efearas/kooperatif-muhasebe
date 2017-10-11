@@ -42,6 +42,21 @@ def rapor_stok(request):
 	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
 
 @login_required
+def rapor_satis_aylik(request):
+	tuple = rapor_aylik_urun_satis()
+	#headers = []
+	#for h in tuple[1]:
+	#	headers.append(h)
+	context = {
+		'rows': tuple[0],
+		'headers': tuple[1],
+		'title_of_list': 'Aylık Ürün Satış Miktarı',
+	}
+
+
+	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
+
+@login_required
 def rapor_satis_haftalik(request,pk):
 	headers = ['Yıl','Hafta','Miktar', ]
 	tuple = rapor_urun_satis_haftalik(pk)	
