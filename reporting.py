@@ -89,6 +89,36 @@ def rapor_stok_durumu():
 	tuple = (rows,lastRow)
 	return tuple
 
+def stokta_varolan_urunler():
+
+
+	query = """
+    			WITH
+    			UnionedTable AS(	
+    				select urun_id,(miktar*-1) as miktar from koopmuhasebe_satisstokhareketleri
+    				UNION ALL
+    				select urun_id,miktar from koopmuhasebe_stokgirisi	
+    			),
+    			UnionedTableGrouped AS(	
+    				select urun_id,SUM(miktar) as miktar from UnionedTable
+    				GROUP BY urun_id	
+    			)
+    			SELECT  koopmuhasebe_urun.id ,koopmuhasebe_urun.urun_adi,uretici_adi 
+                FROM UnionedTableGrouped                
+    			INNER JOIN koopmuhasebe_urun ON UnionedTableGrouped.urun_id = koopmuhasebe_urun.id
+                INNER JOIN koopmuhasebe_uretici ON koopmuhasebe_urun.uretici_id = koopmuhasebe_uretici.id
+    			WHERE miktar > 0
+    			ORDER BY UnionedTableGrouped.miktar ASC
+    			"""
+	yekun = 0
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = []
+		for row in cursor.fetchall():
+			rows.append([row[0], row[1], row[2], ])
+	return rows
+
+
 def rapor_urun_satis_haftalik(urunID):
 	query = """SELECT 
 				date_part('year', tarih::date) as yearly,
@@ -119,7 +149,7 @@ def stogu_azalan_urunler():
 	WITH
 	UrunStokHareketleriUnion AS(	
 		select urun_id,(miktar*-1) as miktar from koopmuhasebe_satisstokhareketleri
-		UNION
+		UNION ALL
 		select urun_id,miktar from koopmuhasebe_stokgirisi	
 	),
 	UrunBazindaStokDurumu AS(	

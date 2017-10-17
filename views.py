@@ -270,12 +270,17 @@ def satis_view(request, pk = None):
 	
 	
 	s = UrunFiyatVeBirimleriniGetir()
-	
+	urunler = stokta_varolan_urunler()
 	context = {'form1': satisForm,
 	'form2': satisHareketleri,
 	'urun_fiyat' : s,
+	'urunler' : urunler,
 	}
-	return render(request, 'koopmuhasebe/domain/satis_view.html', context)
+
+	if pk == None:
+		return render(request, 'koopmuhasebe/domain/satis_yeni.html', context)
+	else:
+		return render(request, 'koopmuhasebe/domain/satis_edit.html', context)
 
 
 def UrunFiyatVeBirimleriniGetir():
