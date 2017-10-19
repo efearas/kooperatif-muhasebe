@@ -29,10 +29,15 @@ urlpatterns = [
 	url(r'virman_liste', views.virman_liste, name='virman_liste'),
 	url(r'virman_yeni', views.virman_yeni, name='virman_yeni'),
 	url(r'virman/edit/(?P<pk>\d+)$', views.virman_edit, name='virman_edit'),	
-	
+
+	url(r'borc_alacak_liste', views.borc_alacak_liste, name='borc_alacak_liste'),
+	url(r'borc_alacak_yeni', views.borc_alacak_yeni, name='borc_alacak_yeni'),
+	url(r'borc_alacak/edit/(?P<pk>\d+)$', views.borc_alacak_edit, name='borc_alacak_edit'),
+
 	url(r'rapor_stok', views.rapor_stok, name='rapor_stok'),
 	url(r'rapor_ciro', views.rapor_ciro, name='rapor_ciro'),
 	url(r'rapor_satis_aylik', views.rapor_satis_aylik, name='rapor_satis_aylik'),
+	url(r'rapor_uretici_borc', views.rapor_uretici_borc, name='rapor_uretici_borc'),
 	url(r'rapor_satis_haftalik/(?P<pk>\d+)$', views.rapor_satis_haftalik, name='rapor_satis_haftalik'),
 	
 	url(r'test', views.test, name='test'),

@@ -5,8 +5,8 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
-from .models import urun,uretici,Satis,SatisStokHareketleri,Gider,StokGirisi,VirmanVeDuzeltme
-from .forms import UreticiForm,UrunForm, SatisForm, SatisStokHareketleriForm, GiderForm, StokGirisiForm, VirmanForm, RaporTarihForm
+from .models import urun,uretici,Satis,SatisStokHareketleri,Gider,StokGirisi,VirmanVeDuzeltme,BorcAlacak
+from .forms import UreticiForm,UrunForm, SatisForm, SatisStokHareketleriForm, GiderForm, StokGirisiForm, VirmanForm, RaporTarihForm, BorcAlacakForm
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
 from django.forms.models import inlineformset_factory
@@ -17,6 +17,7 @@ import pdb
 import datetime as dt     
 from django.core.mail import EmailMessage
 from django.core.mail import send_mail
+from util import  *
 
 
 def test(request):
@@ -55,6 +56,21 @@ def rapor_satis_aylik(request):
 
 
 	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
+
+@login_required
+def rapor_uretici_borc(request):
+	headers = ['Üretici', 'Borç', ]
+	rows = rapor_uretici_borclari()
+	context = {
+		'rows': rows,
+		'headers': headers,
+		'title_of_list': 'Üreticilere Borçlarımız',
+	}
+
+
+	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
+
+
 
 @login_required
 def rapor_satis_haftalik(request,pk):
@@ -100,7 +116,6 @@ def rapor_ciro(request):
 ###Virman Ve Düzeltme
 @login_required
 def virman_yeni(request):
-#dukkana mal geldi stok girisi yapiyoruz 		
 	if request.method == "POST":
 		form = VirmanForm(request.POST)
 		if form.is_valid():
@@ -144,8 +159,53 @@ def virman_edit(request,pk):
 	
 	return render(request, 'koopmuhasebe/domain/main-body-form-virman.html', {'form': form,})
 
+#BORC ALACAK
+@login_required
+def borc_alacak_liste(request):
+	borc_alacak_listesi = BorcAlacak.objects.all().order_by('-id')
+	headers = ['Kayıt No','Tarih','Üretici' ,'Tutar','Borç/Alacak',]
+	rows = []
+	for p in borc_alacak_listesi:
+		rows.append([p.id,p.tarih,p.uretici,p.tutar, p.borcmu_alacakmi])
+	context = {'rows': rows, 'headers': headers,
+	'title_of_list':'Borç Alacak Hareketleri',
+	'form_adresi':'borc_alacak_yeni',
+	'edit_adresi':'borc_alacak/edit/',
+	'yeni_buton_adi':'Yeni Borç Alacak Girişi'}
+	return render(request, 'koopmuhasebe/main-body-liste.html',context)
 
-###STOK GİRİŞLERİ
+@login_required
+def borc_alacak_yeni(request):
+		if request.method == "POST":
+			form = BorcAlacakForm(request.POST)
+			if form.is_valid():
+				borcAlacakObj = form.save(commit=False)
+				borcAlacakObj.kullanici = request.user
+				borcAlacakObj.save()
+				return redirect('/koopmuhasebe/borc_alacak_liste')
+		else:
+			form = BorcAlacakForm()
+
+		return render(request, 'koopmuhasebe/domain/main-body-form-borc-alacak.html', {'form': form, })
+
+
+@login_required
+def borc_alacak_edit(request, pk):
+	borcAlacakObj = get_object_or_404(BorcAlacak, pk=pk)
+	if request.method == "POST":
+		form = BorcAlacakForm(request.POST, instance=borcAlacakObj)
+		if form.is_valid():
+			borcAlacakObj = form.save(commit=False)
+			borcAlacakObj.kullanici = request.user
+			form.save()
+			return redirect('/koopmuhasebe/borc_alacak_liste')
+	else:
+		form = BorcAlacakForm(instance=borcAlacakObj)
+
+	return render(request, 'koopmuhasebe/domain/main-body-form-borc-alacak.html', {'form': form, })  ###STOK GİRİŞLERİ
+
+
+#STOK GİRİŞİ
 @login_required
 def stok_girisi_yeni(request):
 #dukkana mal geldi stok girisi yapiyoruz 		
@@ -154,6 +214,10 @@ def stok_girisi_yeni(request):
 		if form.is_valid():
 			stokGirisObj = form.save(commit=False)			
 			stokGirisObj.save()
+			otomatikNot = str(stokGirisObj.miktar) +' adet ' +stokGirisObj.urun.urun_adi
+			urunObj = urun.objects.get(pk=stokGirisObj.urun.id)
+			tutar = request.POST['tutar']
+			borcAlacak = BorcAlacak.objects.create(uretici=urunObj.uretici, tarih = stokGirisObj.tarih, tutar = tutar, borcmu_alacakmi = 1, notlar =  otomatikNot ,kullanici= request.user, dis_sistem_tipi=1, dis_sistem_id = stokGirisObj.id)
 			return redirect('/koopmuhasebe/stok_girisi_liste')
 	else:
 		form = StokGirisiForm()
@@ -178,17 +242,32 @@ def stok_girisi_liste(request):
 @login_required
 def stok_girisi_edit(request,pk):
 	stokGirisiObj = get_object_or_404(StokGirisi, pk=pk)
+	#borcAlacakObj = BorcAlacak.objects.get(dis_sistem_id=pk, dis_sistem_tipi=1)
+	borcAlacakObj = get_or_none(BorcAlacak, dis_sistem_id=pk, dis_sistem_tipi=1)
+	tutar = 0
 	if request.method == "POST":
 		form = StokGirisiForm(request.POST,instance=stokGirisiObj)
 		if form.is_valid():
-			stokGirisiObj = form.save(commit=False)			
+			stokGirisObj = form.save(commit=False)
 			form.save()
+			tutar = request.POST['tutar']
+			if borcAlacakObj != None:
+				borcAlacakObj.tutar = tutar
+				borcAlacakObj.save()
+			else:
+				otomatikNot = str(stokGirisObj.miktar) + ' adet ' + stokGirisObj.urun.urun_adi
+				urunObj = urun.objects.get(pk=stokGirisObj.urun.id)
+				tutar = request.POST['tutar']
+				borcAlacak = BorcAlacak.objects.create(uretici=urunObj.uretici, tarih=stokGirisObj.tarih, tutar=tutar,
+													   borcmu_alacakmi=1, notlar=otomatikNot, kullanici=request.user,
+													   dis_sistem_tipi=1, dis_sistem_id=stokGirisObj.id)
 			return redirect('/koopmuhasebe/stok_girisi_liste',pk=stokGirisiObj.pk)
 	else:
 		form = StokGirisiForm(instance=stokGirisiObj)
-	
+		if borcAlacakObj != None:
+			tutar = borcAlacakObj.tutar
 	s = UrunFiyatVeBirimleriniGetir()
-	return render(request, 'koopmuhasebe/domain/main-body-form-stok_girisi.html', {'form': form, 'urun_fiyat' : s,})
+	return render(request, 'koopmuhasebe/domain/main-body-form-stok_girisi.html', {'form': form, 'urun_fiyat' : s, 'tutar' : tutar, })
 	
 	
 
@@ -377,9 +456,9 @@ def form_uretici_edit(request,pk):
 		if form.is_valid():
 			ureticiObj = form.save(commit=False)
 			ureticiObj.kullanici = request.user
-			ureticiObj.tarih = datetime.now()
+			ureticiObj.tarih = datetime.datetime.now()
 			form.save()
-			return redirect('uretici_edit',pk=ureticiObj.pk)
+			return redirect('/koopmuhasebe/liste_uretici')
 	else:
 		form = UreticiForm(instance=ureticiObj)
 	return render(request, 'koopmuhasebe/domain/main-body-form-uretici.html', {'form': form})
@@ -395,7 +474,7 @@ def liste_uretici(request):
 	'form_adresi':'form_uretici_yeni',
 	'title_of_list':'Üreticiler',
 	'edit_adresi':'koopmuhasebe/uretici/edit/',	
-	'yeni_buton_adi':'Yeni Üretici'}
+	'yeni_buton_adi':'Yeni Uretici'}
 	return render(request, 'koopmuhasebe/main-body-liste.html',context)
 	
 @login_required

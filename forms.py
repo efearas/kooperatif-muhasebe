@@ -1,5 +1,5 @@
 ﻿from django import forms
-from .models import uretici,urun,Satis, SatisStokHareketleri,Gider, StokGirisi, VirmanVeDuzeltme, VirmanVeDuzeltmeHesaplari
+from .models import uretici,urun,Satis, SatisStokHareketleri,Gider, StokGirisi, VirmanVeDuzeltme, VirmanVeDuzeltmeHesaplari, BorcAlacak
 from django.forms.models import inlineformset_factory
 #import datetime
 from datetime import datetime, date, timedelta
@@ -12,7 +12,8 @@ class UrunUreticiModelChoiceField(ModelChoiceField):
 	def label_from_instance(self, obj):		
 		return (obj.urun_adi + ' :: '+ obj.uretici.uretici_adi)
 
-class UrunForm(forms.ModelForm):	
+class UrunForm(forms.ModelForm):
+
     class Meta:
         model = urun
         fields = ('urun_adi', 'uretici','musteri_fiyati','birim', 'kdv_orani','dayanisma_urunu','urun_kategorisi')
@@ -46,6 +47,11 @@ class SatisForm(forms.ModelForm):
 		model = Satis		
 		exclude = {'kullanici'}
 
+class BorcAlacakForm(forms.ModelForm):
+	tarih = forms.DateTimeField(initial=datetime.now)
+	class Meta:
+		model = BorcAlacak
+		exclude= {'kullanici','dis_sistem_tipi','dis_sistem_id'}
 		
 		
 class VirmanForm(forms.ModelForm):	

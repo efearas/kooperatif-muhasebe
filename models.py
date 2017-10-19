@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
@@ -34,7 +36,21 @@ class uretici(models.Model):
 	tarih = models.DateTimeField(auto_now_add=True)
 	def __str__(self):
 		return self.uretici_adi
-	
+
+class BorcAlacak(models.Model):
+	BORC_ALACAK_CHOICES = (
+		(1,'Alacak'),
+		(-1, 'Borç'),
+	)
+	uretici = models.ForeignKey(uretici)
+	tarih = models.DateTimeField()
+	tutar = models.DecimalField(null=True, max_digits=7, decimal_places=2)
+	borcmu_alacakmi = models.IntegerField(null=True, choices=BORC_ALACAK_CHOICES,
+        default=-1,)
+	notlar = models.CharField(max_length=1500)
+	kullanici = models.ForeignKey(User)
+	dis_sistem_tipi = models.IntegerField(null=True) #stok girisi veya programin baska yerlerinden yapilan girislerde kullanilacak
+	dis_sistem_id = models.IntegerField(null=True) #stok_girisi_id
 
 
 class urun(models.Model):

@@ -202,3 +202,18 @@ def rapor_ciro_durumu(baslangicTarihi, bitisTarihi):
 		for row in cursor.fetchall():
 			rows.append([row[0],row[1],])				
 	return rows
+
+
+def rapor_uretici_borclari():
+	query = """
+	SELECT  uretici_adi,  SUM((tutar*borcmu_alacakmi)) as borc FROM koopmuhasebe_borcalacak
+		INNER JOIN koopmuhasebe_uretici ON koopmuhasebe_uretici.id = koopmuhasebe_borcalacak.uretici_id
+		GROUP BY uretici_adi
+		ORDER BY uretici_adi ASC
+	"""
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = []
+		for row in cursor.fetchall():
+			rows.append([row[0], row[1], ])
+	return rows
