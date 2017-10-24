@@ -17,7 +17,7 @@ import pdb
 import datetime as dt     
 from django.core.mail import EmailMessage
 from django.core.mail import send_mail
-from util import  *
+from .util import  *
 
 
 def test(request):
