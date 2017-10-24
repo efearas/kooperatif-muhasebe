@@ -16,7 +16,7 @@ class UrunForm(forms.ModelForm):
 
     class Meta:
         model = urun
-        fields = ('urun_adi', 'uretici','musteri_fiyati','birim', 'kdv_orani','dayanisma_urunu','urun_kategorisi')
+        fields = ('urun_adi', 'uretici','musteri_fiyati','birim', 'kdv_kategorisi','dayanisma_urunu','urun_kategorisi')
 
 class GiderForm(forms.ModelForm):
 	tarih = forms.DateTimeField(initial=datetime.now)	
@@ -51,7 +51,7 @@ class BorcAlacakForm(forms.ModelForm):
 	tarih = forms.DateTimeField(initial=datetime.now)
 	class Meta:
 		model = BorcAlacak
-		exclude= {'kullanici','dis_sistem_tipi','dis_sistem_id'}
+		exclude= {'kullanici','dis_sistem_tipi','dis_sistem_id','borcmu_alacakmi'}
 		
 		
 class VirmanForm(forms.ModelForm):	

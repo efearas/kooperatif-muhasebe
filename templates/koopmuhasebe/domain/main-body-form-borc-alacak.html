@@ -1,0 +1,118 @@
+﻿{% extends "koopmuhasebe/main-body-form.html" %}
+
+{% block form-action %}{{action}}{% endblock %}
+{% block form-details %}
+
+{% load myfilters %}
+
+
+{% if form.errors %}
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }} {{ field.name}}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }} {{ field.name}}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<label>Tarih</label>
+
+						<div class='form-group input-group' id='datetimepicker1'>
+							{{form.tarih|addwidgets:"class:form-control"}}
+
+							<span class="input-group-addon">
+								<span class="glyphicon glyphicon-calendar"></span>
+							</span>
+						</div>
+<div class="form-group">
+	<label>Üretici</label>
+	{{form.uretici|addclass:'form-control'}}
+</div>
+
+<div class="form-group">
+	<label>Ödeme Aracı</label>
+	{{form.odeme_araci|addclass:'form-control'}}
+</div>
+
+
+<div class="form-group">
+	<label>Tutar</label>
+	{{form.tutar|addclass:'form-control' }}
+</div>
+<div class="form-group">
+	<label>Notlar</label>
+	{{form.notlar|addclass:'form-control'}}
+</div>
+
+
+<script type="text/javascript">   
+	
+	$(document).ready(function(){
+	
+		
+		//combodan urun secti
+		$('select').on('change', function() {			
+			idOfCombo=$(this).attr('id');
+			valueOfCombo = $(this).val();
+			//idOfComboWithoutUrun = idOfCombo.substring(0, idOfCombo.length-4);
+			//idOfBirimFiyatKutusu = idOfComboWithoutUrun +'urun-birim_fiyat';
+						
+			//satirSayisi = Number(idOfCombo.match(/\d+/));			
+			birim = getBirimByID(valueOfCombo);			
+			
+			//Burada eskiden birim set ediyordu. artik birimi sabitledik.
+			//$("#birim_span").text(birim);
+			
+			
+		});		
+		
+	});
+
+	
+	var arr = [{{urun_fiyat|safe|escape}}];
+	
+
+
+	function getBirimByID(key)
+	{
+		//var arr = ["p1","10.1","p2","20"];		
+				
+		var result;
+		for(i=0;i<arr.length;i=i+4)
+		{
+			if(arr[i] == key)
+			{
+				result = arr[i+2];
+			}
+		}
+		//alert(result);
+		return result;
+	}	
+	
+	
+	
+	
+</script>
+
+<script type="text/javascript">
+            $(function () {
+                $('#datetimepicker1').datetimepicker(
+				{
+					
+					format : 'YYYY-MM-DD hh:mm',
+					
+				}
+				
+				);
+				
+				
+            });
+</script>
+
+{% endblock %}

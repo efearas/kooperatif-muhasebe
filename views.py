@@ -163,15 +163,15 @@ def virman_edit(request,pk):
 @login_required
 def borc_alacak_liste(request):
 	borc_alacak_listesi = BorcAlacak.objects.all().order_by('-id')
-	headers = ['Kayıt No','Tarih','Üretici' ,'Tutar','Borç/Alacak',]
+	headers = ['Kayıt No','Tarih','Üretici' ,'Tutar', 'Ödeme Aracı' ,'Borç/Alacak',]
 	rows = []
 	for p in borc_alacak_listesi:
-		rows.append([p.id,p.tarih,p.uretici,p.tutar, p.borcmu_alacakmi])
+		rows.append([p.id,p.tarih,p.uretici,p.tutar, GetOdemeAraciEnum(p.odeme_araci) , GetBorcAlacakEnum(p.borcmu_alacakmi),])
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Borç Alacak Hareketleri',
 	'form_adresi':'borc_alacak_yeni',
 	'edit_adresi':'borc_alacak/edit/',
-	'yeni_buton_adi':'Yeni Borç Alacak Girişi'}
+	'yeni_buton_adi':'Yeni Ödeme Girişi'}
 	return render(request, 'koopmuhasebe/main-body-liste.html',context)
 
 @login_required
@@ -187,6 +187,18 @@ def borc_alacak_yeni(request):
 			form = BorcAlacakForm()
 
 		return render(request, 'koopmuhasebe/domain/main-body-form-borc-alacak.html', {'form': form, })
+
+def GetOdemeAraciEnum(var):
+	if var == 1:
+		return 'Banka'
+	if var == 2:
+		return 'Nakit'
+
+def GetBorcAlacakEnum(var):
+	if var == -1:
+		return 'Ödeme'
+	else:
+		return 'Tahsilat'
 
 
 @login_required
@@ -228,10 +240,10 @@ def stok_girisi_yeni(request):
 @login_required
 def stok_girisi_liste(request):
 	stok_girisleri_listesi = StokGirisi.objects.all().order_by('-id')
-	headers = ['Kayıt No','Tarih','Ürün' ,'Miktar',]
+	headers = ['Kayıt No','Tarih','Ürün' ,'Miktar', 'Stok Hareketi Tipi',]
 	rows = []
 	for p in stok_girisleri_listesi:		
-		rows.append([p.id,p.tarih,p.urun,p.miktar,])	
+		rows.append([p.id,p.tarih,p.urun,p.miktar, p.stok_hareketi_tipi,])
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Stok Girişleri',
 	'form_adresi':'stok_girisi_yeni',
@@ -366,7 +378,9 @@ def UrunFiyatVeBirimleriniGetir():
 	urun_fiyatlari = urun.objects.all()
 	s=""
 	for urun_fiyat in urun_fiyatlari:
-		s = s + "'" + str(urun_fiyat.id) + "'," + "'" + str(urun_fiyat.musteri_fiyati) + "'," + "'" + str(urun_fiyat.birim) + "'," + "'" + str(urun_fiyat.kdv_orani) + "',"
+		#s = s + "'" + str(urun_fiyat.id) + "'," + "'" + str(urun_fiyat.musteri_fiyati) + "'," + "'" + str(urun_fiyat.birim) + "'," + "'" + str(urun_fiyat.kdv_orani) + "',"
+		s = s + "'" + str(urun_fiyat.id) + "'," + "'" + str(urun_fiyat.musteri_fiyati) + "'," + "'" + str(
+			urun_fiyat.birim) + "'," + "'" + str(urun_fiyat.kdv_kategorisi) + "',"
 	return s	
 
 	

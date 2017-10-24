@@ -9,24 +9,31 @@ from datetime import datetime
 class Birim(models.Model):
 	birim_adi = models.CharField(max_length=50)
 	def __str__(self):
-		return self.birim_adi
+		return self.birim_adi.encode('utf-8')
 
 class GiderTipi(models.Model):
 	gider_adi = models.CharField(max_length=50)
 	def __str__(self):
-		return self.gider_adi
+		return self.gider_adi.encode('utf-8')
 
 class StokHareketiTipi(models.Model):
 	stok_hareket_tipi_adi = models.CharField(max_length=50)
 	def __str__(self):
-		return self.stok_hareket_tipi_adi
+		return self.stok_hareket_tipi_adi.encode('utf-8')
 
 class UrunKategorisi(models.Model):
 	urun_kategori_adi = models.CharField(max_length=50)
 	def __str__(self):
-		return self.urun_kategori_adi
+		return self.urun_kategori_adi.encode('utf-8')
 		
 ###
+
+class KDVKategorisi(models.Model):
+	kategori_adi = models.CharField(max_length=200)
+	kdv_orani = models.IntegerField()
+	def __str__(self):
+		return self.kategori_adi.encode('utf-8')
+
 
 class uretici(models.Model):
 	uretici_adi = models.CharField(max_length=200)
@@ -35,18 +42,26 @@ class uretici(models.Model):
 	kullanici = models.ForeignKey(User)
 	tarih = models.DateTimeField(auto_now_add=True)
 	def __str__(self):
-		return self.uretici_adi
+		return self.uretici_adi.encode('utf-8')
 
 class BorcAlacak(models.Model):
 	BORC_ALACAK_CHOICES = (
 		(1,'Alacak'),
 		(-1, 'Borç'),
 	)
+
+	ODEME_ARACI_CHOICES = (
+		(1, 'Banka'),
+		(2, 'Nakit'),
+	)
+
 	uretici = models.ForeignKey(uretici)
 	tarih = models.DateTimeField()
 	tutar = models.DecimalField(null=True, max_digits=7, decimal_places=2)
 	borcmu_alacakmi = models.IntegerField(null=True, choices=BORC_ALACAK_CHOICES,
         default=-1,)
+	odeme_araci = models.IntegerField(null=True, choices=ODEME_ARACI_CHOICES,
+										  default=1, )
 	notlar = models.CharField(max_length=1500)
 	kullanici = models.ForeignKey(User)
 	dis_sistem_tipi = models.IntegerField(null=True) #stok girisi veya programin baska yerlerinden yapilan girislerde kullanilacak
@@ -55,6 +70,7 @@ class BorcAlacak(models.Model):
 
 class urun(models.Model):
 	urun_kategorisi = models.ForeignKey(UrunKategorisi)
+	kdv_kategorisi = models.ForeignKey(KDVKategorisi, null=True)
 	urun_adi = models.CharField(max_length=200)
 	uretici = models.ForeignKey(uretici)
 	uye_fiyati = models.DecimalField(null=True,  max_digits=7,decimal_places=2)
@@ -64,7 +80,7 @@ class urun(models.Model):
 	dayanisma_urunu = models.BooleanField()
 	
 	def __str__(self):
-		return self.urun_adi
+		return self.urun_adi.encode('utf-8')
 		
 class Gider(models.Model):
 	tarih  = models.DateTimeField()
@@ -92,12 +108,12 @@ class SatisStokHareketleri(models.Model):
 	miktar = models.IntegerField()
 	tutar = models.DecimalField(null=True,   max_digits=7,decimal_places=2)	
 	def __str__(self):
-		return self.urun
+		return self.urun.encode('utf-8')
 
 class VirmanVeDuzeltmeHesaplari(models.Model):
 	hesap_adi = models.CharField(max_length=50)
 	def __str__(self):
-		return self.hesap_adi
+		return self.hesap_adi.encode('utf-8')
 		
 class VirmanVeDuzeltme(models.Model):
 	tarih  = models.DateTimeField()

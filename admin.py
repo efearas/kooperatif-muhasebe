@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import urun,uretici,Satis,SatisStokHareketleri,Birim,GiderTipi,VirmanVeDuzeltmeHesaplari,StokHareketiTipi,UrunKategorisi, Gider, StokGirisi, VirmanVeDuzeltme
+from .models import urun,uretici,Satis,SatisStokHareketleri,Birim,GiderTipi,VirmanVeDuzeltmeHesaplari,StokHareketiTipi,UrunKategorisi, Gider, StokGirisi, VirmanVeDuzeltme, KDVKategorisi
 # Register your models here.
 admin.site.register(Birim)
 admin.site.register(GiderTipi)
@@ -12,3 +12,4 @@ admin.site.register(Gider)
 admin.site.register(StokGirisi)
 admin.site.register(VirmanVeDuzeltme)
 admin.site.register(urun)
+admin.site.register(KDVKategorisi)
