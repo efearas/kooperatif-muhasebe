@@ -109,7 +109,7 @@ class SatisStokHareketleri(models.Model):
 	miktar = models.IntegerField()
 	tutar = models.DecimalField(null=True,   max_digits=7,decimal_places=2)	
 	def __str__(self):
-		return self.urun
+		return self.urun.urun_adi
 
 class VirmanVeDuzeltmeHesaplari(models.Model):
 	hesap_adi = models.CharField(max_length=50)
