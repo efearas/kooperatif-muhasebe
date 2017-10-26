@@ -63,7 +63,8 @@
     $(document).ready(function() {
         $('#dataTables-example').DataTable({
             "responsive": true,
-			"ordering": false,
+			"ordering": true,
+			 "order": [[ 0, "desc" ]],
 			"pageLength": 200,
 			"lengthMenu": [ 10, 25, 50, 75, 100, 200, 400 ]
         });
