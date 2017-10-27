@@ -108,7 +108,7 @@ def stokta_varolan_urunler():
     			INNER JOIN koopmuhasebe_urun ON UnionedTableGrouped.urun_id = koopmuhasebe_urun.id
                 INNER JOIN koopmuhasebe_uretici ON koopmuhasebe_urun.uretici_id = koopmuhasebe_uretici.id
     			WHERE miktar > 0
-    			ORDER BY UnionedTableGrouped.miktar ASC
+    			ORDER BY koopmuhasebe_urun.urun_adi ASC
     			"""
 	yekun = 0
 	with connection.cursor() as cursor:
