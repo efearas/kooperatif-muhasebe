@@ -15,7 +15,7 @@ from django.contrib.auth.decorators import permission_required
 from .reporting import *
 import pdb
 import datetime as dt     
-from django.core.mail import EmailMessage
+from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from .util import  *
 
@@ -385,7 +385,8 @@ def UrunFiyatVeBirimleriniGetir():
 
 	
 @login_required
-def satis_liste(request):	
+def satis_liste(request):
+	a=User.get_all_permissions(request.user)
 	satis_listesi = Satis.objects.all().order_by('-id').annotate(toplamTutar=Sum('satisstokhareketleri__tutar'))
 	headers = ['Kayıt No','Tarih','Tutar','Kullanici',]
 	rows = []
@@ -403,7 +404,7 @@ def satis_liste(request):
 ###ÜRÜN
 
 @login_required
-@permission_required("koopmuhasebe.can_change_urun")
+@permission_required("koopmuhasebe.change_urun")
 def urun_yeni(request): 		
 	if request.method == "POST":
 		form = UrunForm(request.POST)
@@ -431,8 +432,9 @@ def urun_liste(request):
 	return render(request, 'koopmuhasebe/main-body-liste.html',context)
 
 @login_required
-@permission_required("koopmuhasebe.can_change_urun")
+@permission_required("koopmuhasebe.change_urun")
 def urun_edit(request,pk):
+	#a = User.get_all_permissions(request.user)
 	urunObj = get_object_or_404(urun, pk=pk)
 	if request.method == "POST":
 		form = UrunForm(request.POST,instance=urunObj)
@@ -448,7 +450,7 @@ def urun_edit(request,pk):
 
 ###ÜRETİCİ
 @login_required
-@permission_required("koopmuhasebe.can_change_uretici")
+@permission_required("koopmuhasebe.change_uretici")
 def form_uretici_yeni(request): 		
 	if request.method == "POST":
 		form = UreticiForm(request.POST)
@@ -462,7 +464,7 @@ def form_uretici_yeni(request):
 	return render(request, 'koopmuhasebe/domain/main-body-form-uretici.html', {'form': form})
 
 @login_required
-@permission_required("koopmuhasebe.can_change_uretici")
+@permission_required("koopmuhasebe.change_uretici")
 def form_uretici_edit(request,pk):
 	ureticiObj = get_object_or_404(uretici, pk=pk)
 	if request.method == "POST":
