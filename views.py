@@ -198,7 +198,7 @@ def GetBorcAlacakEnum(var):
 	if var == -1:
 		return 'Ödeme'
 	else:
-		return 'Tahsilat'
+		return 'Ürün Girişi'
 
 
 @login_required

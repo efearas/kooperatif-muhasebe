@@ -61,8 +61,7 @@ class BorcAlacak(models.Model):
 	tutar = models.DecimalField(null=True, max_digits=7, decimal_places=2)
 	borcmu_alacakmi = models.IntegerField(null=True, choices=BORC_ALACAK_CHOICES,
         default=-1,)
-	odeme_araci = models.IntegerField(null=True, choices=ODEME_ARACI_CHOICES,
-										  default=1, )
+	odeme_araci = models.IntegerField(null=True, choices=ODEME_ARACI_CHOICES, blank=True,)
 	notlar = models.CharField(max_length=1500)
 	kullanici = models.ForeignKey(User)
 	dis_sistem_tipi = models.IntegerField(null=True) #stok girisi veya programin baska yerlerinden yapilan girislerde kullanilacak
