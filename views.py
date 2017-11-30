@@ -24,7 +24,8 @@ from django.db.models import Max, Min
 from django.db import connection
 
 from django.utils import timezone
-
+from django.utils.timezone import get_current_timezone
+from django.utils.timezone import localtime
 
 def test(request):		
 	_tarih = dt.datetime.today()
@@ -68,7 +69,8 @@ def rapor_stok(request):
 def json_get_urun_zaman_fiyat(request,pk):
 	results = urun_fiyat.objects.filter(urun=pk).values('zaman', 'fiyat','kullanici__username').order_by('-zaman')
 	for row in results:
-		row['zaman'] = row['zaman'].strftime("%Y-%m-%d %H:%M:%S")
+		#zaman = timezone.make_aware(row['zaman'] , timezone.get_current_timezone())
+		row['zaman'] = localtime(row['zaman']).strftime("%Y-%m-%d %H:%M:%S")
 	return JsonResponse({'results': list(results)})
 
 @login_required
@@ -81,11 +83,12 @@ def json_get_urun_son_fiyat(request, yyyy,mo,dd,hh,mi):
 @login_required
 def json_post_urun_zaman_fiyat(request):
 	if request.method == 'POST':
-		#myResponse.content.decode('utf-8')
 		dic = json.loads(request.body.decode('utf-8'))
-		tarih =  dt.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
+		#tarih = timezone.now()
+		#tarih = timezone.make_aware(tarih, timezone.get_current_timezone())
+		tarih = timezone.make_aware(datetime.datetime.now(),timezone.get_default_timezone())
 		urun_fiyat.objects.create(urun_id=dic['urun_id'], zaman = tarih, fiyat = dic['fiyat'], kullanici=request.user)
-	return JsonResponse({'zaman': tarih, 'fiyat' : "{:10.2f}".format(dic['fiyat']) , 'kullanici' : request.user.username })
+	return JsonResponse({'zaman': tarih.strftime("%Y-%m-%d %H:%M:%S"), 'fiyat' : "{:10.2f}".format(dic['fiyat']) , 'kullanici' : request.user.username })
 
 
 
