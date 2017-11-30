@@ -16,7 +16,7 @@ class UrunForm(forms.ModelForm):
 
     class Meta:
         model = urun
-        fields = ('urun_adi', 'uretici','musteri_fiyati','birim', 'kdv_kategorisi','dayanisma_urunu','urun_kategorisi')
+        fields = ('urun_adi', 'uretici','birim', 'kdv_kategorisi','dayanisma_urunu','urun_kategorisi')
 
 class GiderForm(forms.ModelForm):
 	tarih = forms.DateTimeField(initial=datetime.now)	

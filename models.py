@@ -2,7 +2,7 @@
 
 from django.db import models
 from django.contrib.auth.models import User
-from datetime import datetime
+
 
 # Create your models here.
 
@@ -78,9 +78,14 @@ class urun(models.Model):
 	birim = models.ForeignKey(Birim, null=True)
 	kdv_orani = models.IntegerField(null=True)	
 	dayanisma_urunu = models.BooleanField()
-	
 	def __str__(self):
 		return self.urun_adi
+
+class urun_fiyat(models.Model):
+	urun = models.ForeignKey(urun)
+	zaman = models.DateTimeField()
+	fiyat = models.DecimalField(max_digits=7, decimal_places=2)
+	kullanici = models.ForeignKey(User)
 		
 class Gider(models.Model):
 	tarih  = models.DateTimeField()
@@ -122,4 +127,3 @@ class VirmanVeDuzeltme(models.Model):
 	tutar = models.DecimalField(max_digits=7,decimal_places=2)	
 	notlar = models.CharField(max_length=500)
 	kullanici = models.ForeignKey(User, null=True)
-	

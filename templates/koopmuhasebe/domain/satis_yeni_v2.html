@@ -1,0 +1,317 @@
+﻿{% extends "koopmuhasebe/main-body-form.html" %}
+
+{% block form-action %}{{action}}{% endblock %}
+{% block form-title %}Satış{% endblock %}
+{% block form-details %}
+
+{% load myfilters %}
+{{ form2.management_form }}
+
+{{form1.errors.as_text}}
+
+ <script type="text/javascript" src="/static/koopmuhasebe/satis.js" ></script>
+
+<div class="form-group">
+	<label>Tarih</label>
+	<div class='input-group' id='datetimepicker1' onchange="TarihDegisti();">
+		{{form1.tarih|addwidgets:"class:form-control"}}
+		{{form1.tarih.errors.as_text}}
+		<span class="input-group-addon">
+			<span class="glyphicon glyphicon-calendar"></span>
+        </span>
+	</div>
+  
+		
+</div>
+ 
+ 
+ 
+<div class="form-group">
+ <table class="table" id="tablo-siparis">
+	<thead>
+		<tr>
+			<th>Ürün</th>
+			<th>Birim Fiyat</th>
+			<th>Miktar</th>
+			<th>Tutar</th>
+		</tr>
+
+{{ form2.management_form }}
+{% for f in form2.forms %}
+<tr>
+	<td>		
+        <select name="satisstokhareketleri_set-{{ forloop.counter0 }}-urun" class="form-control input-md" id="id_satisstokhareketleri_set-{{ forloop.counter0 }}-urun">
+  			<option value="" selected="">---------</option>
+			{% for urun in urunler %}
+  				<option value="{{urun.0}}">{{urun.1}} :: {{urun.2}}</option>
+  			{% endfor %}
+		</select>
+		
+	</td> 
+	<td>
+		<input type=text id="id_satisstokhareketleri_set-{{ forloop.counter0 }}-urun-birim_fiyat" class="form-control input-md" readonly> 
+		
+       
+	</td> 
+	<td>		
+		<div class="form-group input-group">			
+			{{f.miktar|addclass:'form-control input-md miktar_kutusu'}}
+			<span id="birim_span_{{ forloop.counter0 }}" class="input-group-addon">Adet</span>
+			
+		</div>
+		{{f.miktar.errors.as_text}}			
+	</td> 
+	<td>		
+        {{f.tutar|addclass:'form-control input-md tutar_kutusu'}}
+		{{f.tutar.errors.as_text}}
+	</td> 
+            
+    {% for field in f %}
+		{% if field.is_hidden %}                                     
+			{{ field}}
+        {% endif %}
+	{% endfor %}    
+		
+		
+</tr>
+
+</div>
+{% endfor %}
+
+<tr>
+	<td>		
+        
+	</td> 
+	<td>
+	
+       
+	</td> 
+	<td align="right">		
+        <b>Total:</b>
+	</td> 
+	<td>		
+			<input type=text id="total" class="form-control input-sm" readonly>     
+	</td> 
+            
+    
+		
+		
+</tr>
+
+
+</table>
+
+
+<table class="table" id="tablo-kdv">
+	<thead>
+		<tr>
+			<th>Kdv Oranı</th>
+			<th></th>
+			<th>KDV Tutarı</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+	</tbody>
+</table>
+
+<script type="text/javascript">   
+	
+	var arr = [{{urun_fiyat|safe|escape}}];
+	dicGuncelFiyatlar = {};
+
+
+	$(document).ready(function(){
+	
+		
+		//combodan urun secti
+		$('select').on('change', function() {			
+			idOfCombo=$(this).attr('id');
+			valueOfCombo = $(this).val();
+			idOfComboWithoutUrun = idOfCombo.substring(0, idOfCombo.length-4);
+			idOfBirimFiyatKutusu = idOfComboWithoutUrun +'urun-birim_fiyat';
+						
+			satirSayisi = Number(idOfCombo.match(/\d+/));			
+			birim = getBirimByID(valueOfCombo);
+			if(birim == 'Kg')
+			{
+				birim = 'Gr';
+				
+			}
+			
+			$("#"+idOfBirimFiyatKutusu).val(getFiyatByID(valueOfCombo));
+			//$("#birim_span_" + satirSayisi).text(birim);
+			
+			
+			reCalculate();
+			
+			
+		});		
+		
+		//miktar deggisti
+		//$('.miktar_kutusu').on('change', function() {			
+		$('.miktar_kutusu').on('keyup', function() {					
+			reCalculate();
+		});
+		//miktari yukari asagi oklarla da degistirebilir
+		$('.miktar_kutusu').on('change', function() {					
+			reCalculate();
+		});
+		$('.tutar_kutusu').on('focusout', function() {					
+			reCalculate();
+		});		
+
+		$('#datetimepicker1').on('dp.change', function(e){ 
+			TarihDegisti(e['date']);					
+			//reCalculate();//bu fonk TarihDegisti'nin CallBack'inde cagiriliyor
+		})
+		
+	});
+
+
+	function TarihDegisti(tarih)
+	{
+		arrGuncelFiyatlar = [];
+		dateTarih = new Date(tarih);
+		yyyy = dateTarih.getFullYear();
+		mo = dateTarih.getMonth() + 1; //js getMonth is 0 based
+		dd = dateTarih.getDate();
+		hh = dateTarih.getHours();
+		mi = dateTarih.getMinutes();
+		jsonURL = '../json_get_urun_son_fiyat/'+ yyyy + '/' +mo +'/'+ dd +'/'+ hh + '/' + mi;
+
+		$.ajax({
+			type: 'GET',
+			headers: { "X-CSRFToken": Cookies.get('csrftoken') },
+			url: jsonURL,
+			//data: '{"zaman":  ' + tarih + ' }',
+			success: function(data) {
+				console.log(data);
+				dicGuncelFiyatlar = {};
+				for (var i = 0, l = data.results.length; i < l; i++) {
+					var obj = data.results[i];					 
+					dicGuncelFiyatlar[obj.id] = obj.fiyat;					
+				}
+				reCalculate();
+			},
+			contentType: "application/json",
+	
+		});
+	}
+
+
+	function TotalHesapla()
+	{
+		runningTotal=0;
+		for(sayac=0;sayac<25;sayac++)
+		{
+			tutar = $("#"+'id_satisstokhareketleri_set-' + sayac + '-tutar').val();
+			if(!isNaN(tutar) && tutar != "")
+				runningTotal = runningTotal + parseFloat(tutar);
+		}
+		$("#total").val(runningTotal);
+		return;
+	}
+
+	function editEkranindaSayfaLoadOlurkenBirimFiyatlariGetir()
+	{
+		//comment'e gerek var mi? :)
+		//birimleri de getirmek gerek
+		for(sayac_edit=0; sayac_edit<15; sayac_edit++)
+		{			
+			urunID =  $("#"+'id_satisstokhareketleri_set-'+ sayac_edit +'-urun').val();
+			
+			urunBirimFiyat = getFiyatByID(urunID);
+			if(!isNaN(urunBirimFiyat))	
+				$("#"+'id_satisstokhareketleri_set-' + sayac_edit + '-urun-birim_fiyat').val(urunBirimFiyat);
+			
+			urunBirim2 = getBirimByID(urunID);
+			//if(!isNaN(urunBirim2))
+			
+			/*if(urunBirim2 != '')
+			{
+				if(urunBirim2 == 'Kg')
+					urunBirim2 = 'Gr';
+				$('#birim_span_' + sayac_edit  ).text(urunBirim2);
+			}*/
+		}
+	}
+	
+	
+	function getFiyatByID(key)
+	{		
+		return dicGuncelFiyatlar[key];
+	}
+	
+	/*
+	//eski : sonra sil
+	function getFiyatByID(key)
+	{
+		//var arr = ["p1","10.1","p2","20"];		
+				
+		var result;
+		for(sayac=0;sayac<arr.length;sayac=sayac+4)
+		{
+			if(arr[sayac] == key)
+			{
+				result = arr[sayac+1];
+			}
+		}
+		//alert(result);
+		return result;
+	}*/
+
+	function getBirimByID(key)
+	{
+		//var arr = ["p1","10.1","p2","20"];		
+				
+		var result;
+		for(ctr=0;ctr<arr.length;ctr=ctr+4)
+		{
+			if(arr[ctr] == key)
+			{
+				result = arr[ctr+2];
+			}
+		}
+		//alert(result);
+		return result;
+	}
+
+	function getKDVByID(key)
+	{
+		//var arr = ["p1","10.1","p2","20"];		
+				
+		var result;
+		for(ctr=0;ctr<arr.length;ctr=ctr+4)
+		{
+			if(arr[ctr] == key)
+			{
+				result = arr[ctr+3];
+			}
+		}
+		//alert(result);
+		return result;
+	}	
+	
+	editEkranindaSayfaLoadOlurkenBirimFiyatlariGetir();
+	reCalculate();
+	document.getElementById("id_satisstokhareketleri_set-0-urun").focus();
+	
+	
+</script>
+
+<script type="text/javascript">
+            $(function () {
+                $('#datetimepicker1').datetimepicker(
+				{
+					
+					format : 'YYYY-MM-DD hh:mm',
+					keepInvalid : true,
+				}
+				
+				);
+            });
+</script>
+
+{% endblock %}
+

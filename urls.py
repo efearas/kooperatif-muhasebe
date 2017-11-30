@@ -1,7 +1,6 @@
 from django.conf.urls import url
 from django.conf.urls import include
 from django.contrib.auth import views as auth_views
-
 from . import views
 
 urlpatterns = [
@@ -39,6 +38,10 @@ urlpatterns = [
 	url(r'rapor_satis_aylik', views.rapor_satis_aylik, name='rapor_satis_aylik'),
 	url(r'rapor_uretici_borc', views.rapor_uretici_borc, name='rapor_uretici_borc'),
 	url(r'rapor_satis_haftalik/(?P<pk>\d+)$', views.rapor_satis_haftalik, name='rapor_satis_haftalik'),
+
+	url(r'json_get_urun_zaman_fiyat/(?P<pk>\d+)$', views.json_get_urun_zaman_fiyat, name='json_get_urun_zaman_fiyat'),
+	url(r'json_post_urun_zaman_fiyat', views.json_post_urun_zaman_fiyat, name='json_post_urun_zaman_fiyat'),
+	url(r'json_get_urun_son_fiyat/(\d+)/(\d+)/(\d+)/(\d+)/(\d+)$', views.json_get_urun_son_fiyat, name='json_get_urun_son_fiyat'),
 	
 	url(r'test', views.test, name='test'),
 	

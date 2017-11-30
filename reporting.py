@@ -118,6 +118,40 @@ def stokta_varolan_urunler():
 			rows.append([row[0], row[1], row[2], ])
 	return rows
 
+def urunlerin_guncel_fiyatlari(_tarih):
+	query = """
+    			WITH 
+					CTE AS 
+					(
+						SELECT urun_id, 
+								zaman,
+								fiyat,
+								ROW_NUMBER() OVER (PARTITION BY urun_id ORDER BY zaman DESC)
+						FROM koopmuhasebe_urun_fiyat
+						WHERE ZAMAN < '{tarih}'
+					)
+					
+				SELECT   koopmuhasebe_urun.id, CTE.fiyat from koopmuhasebe_urun
+				INNER JOIN CTE 
+				ON CTE.urun_id = koopmuhasebe_urun.id
+				WHERE CTE.row_number =1
+    		"""	
+	query = query.format(tarih=_tarih)
+	rows = []
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		#rowz = cursor.fetchall()
+		#a=1
+		'''
+		for row in cursor.fetchall():
+			rows.append([ row[0], row[1],])
+		'''
+		columns = [col[0] for col in cursor.description]		
+		return [
+        	dict(zip(columns, row))
+        	for row in cursor.fetchall()]		
+		
+
 
 def rapor_urun_satis_haftalik(urunID):
 	query = """SELECT 

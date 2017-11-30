@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
-from .models import urun,uretici,Satis,SatisStokHareketleri,Gider,StokGirisi,VirmanVeDuzeltme,BorcAlacak
+from .models import urun,uretici,Satis,SatisStokHareketleri,Gider,StokGirisi,VirmanVeDuzeltme,BorcAlacak,urun_fiyat
 from .forms import UreticiForm,UrunForm, SatisForm, SatisStokHareketleriForm, GiderForm, StokGirisiForm, VirmanForm, RaporTarihForm, BorcAlacakForm
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
@@ -18,12 +18,34 @@ import datetime as dt
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from .util import  *
+from django.http import JsonResponse
+import  json
+from django.db.models import Max, Min
+from django.db import connection
+
+from django.utils import timezone
 
 
-def test(request):
-	#email = EmailMessage('Subject 2', 'Body 123', to=['arasefe@gmail.com'])
-	send_mail('Subject here', 'Here is the message.', 'muhasebe@kadikoykoop.org', ['arasefe@gmail.com'], fail_silently=False)
-	#email.send()
+def test(request):		
+	_tarih = dt.datetime.today()
+	#_tarih = "2017-11-29 10:12"
+	unaware_start_date = datetime.datetime.strptime("2017-11-29 10:13", "%Y-%m-%d %H:%M")
+	#aware_start_date = pytz.utc.localize(unaware_start_date)
+	dt_aware = timezone.make_aware(unaware_start_date, timezone.get_current_timezone())
+	query = """    		
+			SELECT urun_id, 
+					zaman,
+					fiyat
+			FROM koopmuhasebe_urun_fiyat
+			WHERE ZAMAN < '{tarih}' AND urun_id =8
+			"""	
+	
+	query = query.format(tarih=dt_aware)
+	
+	rows = []
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rowz = cursor.fetchall()		
 	return render(request, 'koopmuhasebe/test.html')
 
 ###RAPORLAR
@@ -41,6 +63,30 @@ def rapor_stok(request):
 	'edit_adresi':'rapor_satis_haftalik/',
 	}
 	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
+
+@login_required
+def json_get_urun_zaman_fiyat(request,pk):
+	results = urun_fiyat.objects.filter(urun=pk).values('zaman', 'fiyat','kullanici__username').order_by('-zaman')
+	for row in results:
+		row['zaman'] = row['zaman'].strftime("%Y-%m-%d %H:%M:%S")
+	return JsonResponse({'results': list(results)})
+
+@login_required
+def json_get_urun_son_fiyat(request, yyyy,mo,dd,hh,mi):
+	tarih =  datetime.datetime.strptime(yyyy + "-" + mo + "-" + dd + " " + hh + ":" + mi , "%Y-%m-%d %H:%M")
+	dt_aware = timezone.make_aware(tarih, timezone.get_current_timezone())
+	results = urunlerin_guncel_fiyatlari(dt_aware)
+	return JsonResponse({'results': list(results)})
+
+@login_required
+def json_post_urun_zaman_fiyat(request):
+	if request.method == 'POST':
+		dic = json.loads(request.body)
+		tarih =  dt.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
+		urun_fiyat.objects.create(urun_id=dic['urun_id'], zaman = tarih, fiyat = dic['fiyat'], kullanici=request.user)
+	return JsonResponse({'zaman': tarih, 'fiyat' : "{:10.2f}".format(dic['fiyat']) , 'kullanici' : request.user.username })
+
+
 
 @login_required
 def rapor_satis_aylik(request):
@@ -352,7 +398,8 @@ def satis_view(request, pk = None):
 				else:
 					obje.delete()
 			#objeler2.save()
-			return satis_liste(request)
+			#return satis_liste(request)
+			return redirect('/koopmuhasebe/satis_liste')
 	else:
 		if pk != None:
 			satisForm = SatisForm(instance=satis)
@@ -371,9 +418,9 @@ def satis_view(request, pk = None):
 	}
 
 	if pk == None:
-		return render(request, 'koopmuhasebe/domain/satis_yeni.html', context)
+		return render(request, 'koopmuhasebe/domain/satis_yeni_v2.html', context)
 	else:
-		return render(request, 'koopmuhasebe/domain/satis_edit.html', context)
+		return render(request, 'koopmuhasebe/domain/satis_edit_v2.html', context)
 
 
 def UrunFiyatVeBirimleriniGetir():
@@ -417,7 +464,7 @@ def urun_yeni(request):
 			return redirect('/koopmuhasebe/urun_liste')
 	else:
 		form = UrunForm()		
-	return render(request, 'koopmuhasebe/domain/main-body-form-urun.html', {'form': form})
+	return render(request, 'koopmuhasebe/domain/main-body-form-urun_v2.html', {'form': form, 'pk':0})#js patlamasin diye pk'ya 0 geciyorum
 
 @login_required
 def urun_liste(request):
@@ -446,7 +493,7 @@ def urun_edit(request,pk):
 			return redirect('/koopmuhasebe/urun_liste',pk=urunObj.pk)
 	else:
 		form = UrunForm(instance=urunObj)
-	return render(request, 'koopmuhasebe/domain/main-body-form-urun.html', {'form': form})
+	return render(request, 'koopmuhasebe/domain/main-body-form-urun_v2.html', {'form': form, 'pk':pk})
 
 
 

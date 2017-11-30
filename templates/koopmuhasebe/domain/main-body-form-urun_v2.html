@@ -1,0 +1,150 @@
+﻿{% extends "koopmuhasebe/main-body-form.html" %}
+
+{% block form-action %}{{action}}{% endblock %}
+{% block form-details %}
+
+{% load myfilters %}
+
+
+{% if form.errors %}
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{field.name }}{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{field.name }}{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+
+
+<div class="form-group">
+	<label>Ürün Kategorisi</label>
+	{{form.urun_kategorisi |addclass:'form-control'}}                                                    
+</div>
+<div class="form-group">
+	<label>Ürün Adı</label>
+	{{form.urun_adi|addclass:'form-control' }}
+</div>
+<div class="form-group">
+	<label>Üretici</label>
+	{{form.uretici |addclass:'form-control'}}                                                    
+</div>
+<div class="form-group">
+	<label>Birim</label>
+	{{form.birim|addclass:'form-control' }}
+</div>
+
+<div class="form-group">
+	<label>KDV Kategorisi </label>
+	{{form.kdv_kategorisi|addclass:'form-control' }}
+</div>
+<div class="form-group">
+	<label>Dayanışma Ürünü</label>
+	{{form.dayanisma_urunu|addclass:'form-control' }}
+</div>
+
+
+{% endblock %}
+{% block form-after %}
+  <div class="panel-body">
+	  <div class="row">
+		<table id = "fiyatlar_tablosu" class="table">
+	<thead>
+		<tr>
+			<th>
+				Zaman
+			</th>
+			<th>
+				Fiyat
+			</th>
+			<th>
+				Kullanıcı
+			</th>
+		</tr>
+		<tr>
+			<td>
+				Yeni Fiyat:
+			</td>
+			<td>
+				<input type="text" class="form-control" id="yeni_fiyat_kutusu">
+
+			</td>
+			<td>
+				<button type="button" class="btn btn-default" onclick="yeni_fiyat_gonder();">Yeni Fiyat Ekle</button>
+			</td>
+		</tr>
+	</thead>
+	<tbody>
+
+	</tbody>
+	<tfoot>
+
+
+	</tfoot>
+</table>
+	  </div>
+  </div>
+
+
+<script>
+var pk = {{pk}};
+$(document).ready(function() {
+	var edit = true;
+	if ( window.location.pathname.substr(window.location.pathname.length - 9,  window.location.pathname.length) == 'urun_yeni')
+	{
+    	$('#fiyatlar_tablosu').hide();
+    	edit = false;
+   	}
+
+   	if(edit)
+   	{
+		fiyatlari_getir();
+    }
+});
+
+function fiyatlari_getir()
+{
+	$.get("../../../json_get_urun_zaman_fiyat/"+pk, function(data, status){
+   		console.log(data);
+       	for (var i = 0, l = data.results.length; i < l; i++) {
+    		var obj = data.results[i];
+    		var newRowContent = "<tr><td>" + obj.zaman + "</td><td>" + obj.fiyat + "</td><td>" + obj.kullanici__username + "</td></tr>";
+			$("#fiyatlar_tablosu tbody").append(newRowContent);}
+    });
+}
+
+function yeni_fiyat_gonder()
+{
+	yeni_fiyat = $('#yeni_fiyat_kutusu').val();
+	if(isNaN(yeni_fiyat) || yeni_fiyat == '')
+	{
+		alert ("degil");
+	}
+	$.ajax({
+		type: 'POST',
+		headers: { "X-CSRFToken": Cookies.get('csrftoken') },
+		url: '../../../json_post_urun_zaman_fiyat',
+		data: '{"fiyat":  ' + yeni_fiyat +   ', "urun_id":  ' + pk + '  }',
+		success: function(data) {
+    		var newRowContent = "<tr><td>" + data.zaman + "</td><td>" + data.fiyat + "</td><td>" + data.kullanici + "</td></tr>";
+    		$("#fiyatlar_tablosu tbody").prepend(newRowContent);
+    		//$("#fiyatlar_tablosu tbody").append(newRowContent);
+		},
+		contentType: "application/json",
+
+	});
+
+	//dataType: 'json'
+	//fiyatlari_getir();
+}
+
+
+</script>
+
+
+{% endblock %}
