@@ -81,9 +81,10 @@ def json_get_urun_son_fiyat(request, yyyy,mo,dd,hh,mi):
 @login_required
 def json_post_urun_zaman_fiyat(request):
 	if request.method == 'POST':
-		dic = json.loads(request.body)
+		#myResponse.content.decode('utf-8')
+		dic = json.loads(request.body.decode('utf-8'))
 		tarih =  dt.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
-		#urun_fiyat.objects.create(urun_id=dic['urun_id'], zaman = tarih, fiyat = dic['fiyat'], kullanici=request.user)
+		urun_fiyat.objects.create(urun_id=dic['urun_id'], zaman = tarih, fiyat = dic['fiyat'], kullanici=request.user)
 	return JsonResponse({'zaman': tarih, 'fiyat' : "{:10.2f}".format(dic['fiyat']) , 'kullanici' : request.user.username })
 
 
