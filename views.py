@@ -180,12 +180,21 @@ def virman_yeni(request):
 	return render(request, 'koopmuhasebe/domain/main-body-form-virman.html', {'form': form,})
 
 @login_required
+def dashboard(request):
+	kasa = rapor_kasa_durumu()
+	banka = rapor_banka_durumu()
+	context = {'kasa':kasa,
+	'banka':banka,
+	}
+	return render(request, 'koopmuhasebe/main-body-dashboard.html',context)
+
+@login_required
 def virman_liste(request):
 	virman_listesi = VirmanVeDuzeltme.objects.all().order_by('-id')
 	headers = ['Kayıt No','Tarih','Çıkış Hesabı' ,'Giriş Hesabı', 'Tutar', 'Kullanıcı',]
 	rows = []
 	for p in virman_listesi:		
-		rows.append([p.id,p.tarih,p.cikis_hesabi,p.giris_hesabi,p.tutar, p.kullanici,])
+		rows.append([p.id,p.tarih, GetHesapEnum(p.cikis_hesabi),GetHesapEnum(p.giris_hesabi),p.tutar, p.kullanici,])
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Virman ve Düzeltmeler',
 	'form_adresi':'virman_yeni',
@@ -243,7 +252,11 @@ def GetOdemeAraciEnum(var):
 		return 'Banka'
 	if var == 2:
 		return 'Nakit'
-
+def GetHesapEnum(var):
+	if var == 1:
+		return 'Banka'
+	if var == 2:
+		return 'Kasa'
 def GetBorcAlacakEnum(var):
 	if var == -1:
 		return 'Ödeme'
@@ -364,10 +377,10 @@ def gider_edit(request,pk):
 @login_required	
 def gider_liste(request):
 	gider_listesi = Gider.objects.all().order_by('-id')
-	headers = ['Kayıt No','Tarih','Gider Tipi' ,'Tutar',]
+	headers = ['Kayıt No','Tarih','Gider Tipi' ,'Tutar','Ödeme Aracı',]
 	rows = []
 	for p in gider_listesi:		
-		rows.append([p.id,p.tarih,p.gider_tipi,p.tutar,])	
+		rows.append([p.id,p.tarih,p.gider_tipi,p.tutar,GetOdemeAraciEnum(p.odeme_araci) ,])	
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Giderler',
 	'form_adresi':'gider_yeni',

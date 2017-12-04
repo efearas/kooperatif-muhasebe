@@ -42,7 +42,11 @@ urlpatterns = [
 	url(r'json_get_urun_zaman_fiyat/(?P<pk>\d+)$', views.json_get_urun_zaman_fiyat, name='json_get_urun_zaman_fiyat'),
 	url(r'json_post_urun_zaman_fiyat', views.json_post_urun_zaman_fiyat, name='json_post_urun_zaman_fiyat'),
 	url(r'json_get_urun_son_fiyat/(\d+)/(\d+)/(\d+)/(\d+)/(\d+)$', views.json_get_urun_son_fiyat, name='json_get_urun_son_fiyat'),
-	
+
+	url(r'dashboard', views.dashboard, name='dashboard'),	
+
+
+
 	url(r'test', views.test, name='test'),
 	
 	url('^', include('django.contrib.auth.urls')),	

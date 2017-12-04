@@ -89,6 +89,62 @@ def rapor_stok_durumu():
 	tuple = (rows,lastRow)
 	return tuple
 
+def rapor_kasa_durumu():
+	query = """
+			WITH
+			
+			UnionedKasaHareketleri AS(
+			--satis
+			select tutar from koopmuhasebe_satisstokhareketleri 
+			UNION ALL
+			--gider
+			select sum(-tutar) from koopmuhasebe_gider where odeme_araci=2
+			UNION ALL
+			--virman kasaya giris
+			select sum(tutar) from koopmuhasebe_virmanveduzeltme WHERE giris_hesabi =2 
+			UNION ALL
+			--virman kasadan cikis
+			select sum(-tutar) from koopmuhasebe_virmanveduzeltme WHERE cikis_hesabi =2 
+			UNION ALL
+			-- ureticiye odeme
+			select sum(borcmu_alacakmi*tutar) from koopmuhasebe_borcalacak where odeme_araci=2
+			)
+
+			SELECT SUM(tutar) FROM UnionedKasaHareketleri
+			"""
+	yekun = 0
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = cursor.fetchall()
+		yekun = rows[0][0]
+	return yekun
+
+def rapor_banka_durumu():
+	query = """
+			WITH
+			UnionedBankaHareketleri AS(
+			--gider
+			select sum(-tutar) as tutar from koopmuhasebe_gider where odeme_araci=1
+			UNION ALL
+			--virman bankaya giris
+			select sum(tutar) from koopmuhasebe_virmanveduzeltme WHERE giris_hesabi =1 
+			UNION ALL
+			--virman bankadan cikis
+			select sum(-tutar) from koopmuhasebe_virmanveduzeltme WHERE cikis_hesabi =1 
+			UNION ALL
+			-- ureticiye odeme
+			select sum(borcmu_alacakmi*tutar) from koopmuhasebe_borcalacak where odeme_araci=1)
+
+			SELECT SUM(tutar) FROM UnionedBankaHareketleri
+			"""
+	yekun = 0
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = cursor.fetchall()
+		yekun = rows[0][0]
+	return yekun
+
+
 def stokta_varolan_urunler():
 
 

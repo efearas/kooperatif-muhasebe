@@ -88,10 +88,15 @@ class urun_fiyat(models.Model):
 	kullanici = models.ForeignKey(User)
 		
 class Gider(models.Model):
+	ODEME_ARACI_CHOICES = (
+		(1, 'Banka'),
+		(2, 'Nakit'),
+	)
 	tarih  = models.DateTimeField()
 	gider_tipi = models.ForeignKey(GiderTipi)
 	tutar = models.DecimalField(null=True,  max_digits=7,decimal_places=2)
 	notlar = models.CharField(max_length=500)
+	odeme_araci = models.IntegerField(null=True, choices=ODEME_ARACI_CHOICES, blank=True,)
 
 class StokGirisi(models.Model):
 	stok_hareketi_tipi = models.ForeignKey(StokHareketiTipi)
@@ -119,11 +124,18 @@ class VirmanVeDuzeltmeHesaplari(models.Model):
 	hesap_adi = models.CharField(max_length=50)
 	def __str__(self):
 		return self.hesap_adi
-		
+
+HESAP_CHOICES = (
+	(0, '---------'),
+	(1, 'Banka'),
+	(2, 'Kasa'),
+)	
+
+
 class VirmanVeDuzeltme(models.Model):
 	tarih  = models.DateTimeField()
-	cikis_hesabi = models.ForeignKey(VirmanVeDuzeltmeHesaplari, related_name='cikis_hesabi', null=True)
-	giris_hesabi = models.ForeignKey(VirmanVeDuzeltmeHesaplari, related_name='giris_hesabi', null=True)
+	cikis_hesabi = models.IntegerField(null=True, choices=HESAP_CHOICES,)
+	giris_hesabi = models.IntegerField(null=True, choices=HESAP_CHOICES,)
 	tutar = models.DecimalField(max_digits=7,decimal_places=2)	
 	notlar = models.CharField(max_length=500)
 	kullanici = models.ForeignKey(User, null=True)

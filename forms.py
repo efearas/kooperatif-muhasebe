@@ -1,5 +1,6 @@
 ﻿from django import forms
-from .models import uretici,urun,Satis, SatisStokHareketleri,Gider, StokGirisi, VirmanVeDuzeltme, VirmanVeDuzeltmeHesaplari, BorcAlacak
+#from .models import uretici,urun,Satis, SatisStokHareketleri,Gider, StokGirisi, VirmanVeDuzeltme, VirmanVeDuzeltmeHesaplari, BorcAlacak
+from .models import *
 from django.forms.models import inlineformset_factory
 #import datetime
 from datetime import datetime, date, timedelta
@@ -23,7 +24,7 @@ class GiderForm(forms.ModelForm):
 	notlar = forms.CharField( widget=forms.Textarea )
 	class Meta:
 		model = Gider
-		fields = ('tarih', 'gider_tipi','tutar','notlar')
+		fields = ('tarih', 'gider_tipi','tutar','notlar','odeme_araci')
 
 class StokGirisiForm(forms.ModelForm):
 	tarih = forms.DateTimeField(initial=datetime.now)		
@@ -52,12 +53,13 @@ class BorcAlacakForm(forms.ModelForm):
 	class Meta:
 		model = BorcAlacak
 		exclude= {'kullanici','dis_sistem_tipi','dis_sistem_id','borcmu_alacakmi'}
+
 		
 		
 class VirmanForm(forms.ModelForm):	
-	tarih = forms.DateTimeField(initial=datetime.now)	
-	cikis_hesabi = forms.ModelChoiceField(queryset=VirmanVeDuzeltmeHesaplari.objects.all(),required=False)
-	giris_hesabi = forms.ModelChoiceField(queryset=VirmanVeDuzeltmeHesaplari.objects.all(),required=False)
+	tarih = forms.DateTimeField(initial=datetime.now)
+	giris_hesabi = forms.ChoiceField(choices= HESAP_CHOICES)
+	cikis_hesabi = forms.ChoiceField(choices= HESAP_CHOICES)
 	class Meta:
 		model = VirmanVeDuzeltme				
 		exclude = {'kullanici'}
