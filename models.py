@@ -68,6 +68,38 @@ class BorcAlacak(models.Model):
 	dis_sistem_id = models.IntegerField(null=True) #stok_girisi_id
 
 
+
+class kisi(models.Model):
+	kisi_adi = models.CharField(max_length=100) 	
+	notlar = models.CharField(max_length=1500, null=True)
+	def __str__(self):
+		return self.kisi_adi
+
+class KisiOdemeTahsilat(models.Model):
+	ODEME_TAHSILAT_CHOICES = (
+		(1,'Tahsilat'),
+		(-1, 'Ödeme'),
+	)
+
+	ODEME_ARACI_CHOICES = (
+		(1, 'Banka'),
+		(2, 'Kasa'),
+	)
+
+	kisi = models.ForeignKey(kisi)
+	tarih = models.DateTimeField()
+	tutar = models.DecimalField(null=True, max_digits=7, decimal_places=2)
+	odememi_tahsilatmi = models.IntegerField(null=True, choices=ODEME_TAHSILAT_CHOICES,
+        default=1,)
+	odeme_araci = models.IntegerField(null=True, choices=ODEME_ARACI_CHOICES, blank=True,)
+	notlar = models.CharField(max_length=1500)
+	kullanici = models.ForeignKey(User)
+
+	
+
+
+
+
 class urun(models.Model):
 	urun_kategorisi = models.ForeignKey(UrunKategorisi)
 	kdv_kategorisi = models.ForeignKey(KDVKategorisi, null=True)

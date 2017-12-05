@@ -42,6 +42,12 @@ class UreticiForm(forms.ModelForm):
         model = uretici
         fields = ('uretici_adi', 'adres', 'banka_bilgileri')
 
+class KisiForm(forms.ModelForm):	
+    class Meta:
+        model = kisi
+        fields = ('kisi_adi', 'notlar',)
+
+
 class SatisForm(forms.ModelForm):	
 	tarih = forms.DateTimeField(initial=datetime.now)	
 	class Meta:
@@ -54,6 +60,11 @@ class BorcAlacakForm(forms.ModelForm):
 		model = BorcAlacak
 		exclude= {'kullanici','dis_sistem_tipi','dis_sistem_id','borcmu_alacakmi'}
 
+class KisiOdemeTahsilatForm(forms.ModelForm):
+	tarih = forms.DateTimeField(initial=datetime.now)
+	class Meta:
+		model = KisiOdemeTahsilat
+		exclude= {'kullanici',}
 		
 		
 class VirmanForm(forms.ModelForm):	

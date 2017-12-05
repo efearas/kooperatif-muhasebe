@@ -39,8 +39,15 @@
                                     <tbody>
 										{% for row in rows %}	
 											<tr class="odd gradeX">
-												{% for column in row %}	
-													<td><a href="{{edit_adresi}}{{row.0}}"> {{column}}</a></td>													                  
+                                                {% for column in row %}
+
+                                                    {% if edit_adresi != none %}
+                                                    <td><a href="{{edit_adresi}}{{row.0}}"> {{column}}</a></td>													                                                                          
+                                                    {%else%}
+                                                        {% if forloop.counter0 != 0 %}
+                                                            <td><a href="{{row.0}}{{row.1}}"> {{column}}</a></td>													                  
+                                                        {% endif %}
+                                                    {% endif %}
 												{% endfor %}
 											</tr>									
 										{% endfor %}
@@ -64,7 +71,8 @@
         $('#dataTables-example').DataTable({
             "responsive": true,
 			"ordering": true,
-			 "order": [[ 0, "desc" ]],
+             //"order": [[ 0, "desc" ]],
+             "order": [],
 			"pageLength": 200,
 			"lengthMenu": [ 10, 25, 50, 75, 100, 200, 400 ]
         });

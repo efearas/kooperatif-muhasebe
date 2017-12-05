@@ -10,44 +10,60 @@
     {% for field in form %}
         {% for error in field.errors %}
             <div class="alert alert-danger">
-                <strong>{{ error|escape }}</strong>
+                <strong>{{ error|escape }} {{ field.name}}</strong>
             </div>
         {% endfor %}
     {% endfor %}
     {% for error in form.non_field_errors %}
         <div class="alert alert-danger">
-            <strong>{{ error|escape }}</strong>
+            <strong>{{ error|escape }} {{ field.name}}</strong>
         </div>
     {% endfor %}
 {% endif %}
 
 <label>Tarih</label>
 
-						<div class='form-group input-group' id='datetimepicker1'>	
+						<div class='form-group input-group' id='datetimepicker1'>
 							{{form.tarih|addwidgets:"class:form-control"}}
-							
+
 							<span class="input-group-addon">
 								<span class="glyphicon glyphicon-calendar"></span>
 							</span>
 						</div>
+<div class="form-group">
+	<label>Kişi</label>
+	{{form.kisi|addclass:'form-control'}}
+</div>
 
-<div class="form-group">
-	<label>Gider Tipi</label>
-	{{form.gider_tipi|addclass:'form-control'}}
-</div>
-<div class="form-group">
-	<label>Tutar</label>
-	{{form.tutar|addclass:'form-control' }}
-</div>
 <div class="form-group">
 	<label>Ödeme Aracı</label>
 	{{form.odeme_araci|addclass:'form-control'}}
+</div>
+
+<div class="form-group">
+		<label>İşlem</label>
+		{{form.odememi_tahsilatmi|addclass:'form-control'}}
+	</div>
+
+<div class="form-group">
+	<label>Tutar</label>
+	{{form.tutar|addclass:'form-control' }}
 </div>
 <div class="form-group">
 	<label>Notlar</label>
 	{{form.notlar|addclass:'form-control'}}
 </div>
 
+
+<script type="text/javascript">   
+	
+	
+	
+	
+	
+	
+	
+</script>
 
 <script type="text/javascript">
             $(function () {
@@ -63,4 +79,5 @@
 				
             });
 </script>
+
 {% endblock %}

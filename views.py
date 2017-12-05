@@ -5,8 +5,10 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
-from .models import urun,uretici,Satis,SatisStokHareketleri,Gider,StokGirisi,VirmanVeDuzeltme,BorcAlacak,urun_fiyat
-from .forms import UreticiForm,UrunForm, SatisForm, SatisStokHareketleriForm, GiderForm, StokGirisiForm, VirmanForm, RaporTarihForm, BorcAlacakForm
+#from .models import urun,uretici,Satis,SatisStokHareketleri,Gider,StokGirisi,VirmanVeDuzeltme,BorcAlacak,urun_fiyat
+from .models import *
+#from .forms import UreticiForm,UrunForm, SatisForm, SatisStokHareketleriForm, GiderForm, StokGirisiForm, VirmanForm, RaporTarihForm, BorcAlacakForm
+from .forms import *
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
 from django.forms.models import inlineformset_factory
@@ -121,6 +123,43 @@ def rapor_uretici_borc(request):
 	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
 
 
+@login_required
+def rapor_banka_hareketleri(request):
+	headers = ['ID','Tarih','Tutar','Hareket Tipi', ]
+	rows = rapor_banka_hareketleri_listesi()
+	rows2 =[]
+	for row in rows:				
+		rows2.append([ GetEditAdresi(row[3]) ,row[0],row[1], row[2],row[3],])
+	context = {
+	'rows': rows2,
+	'headers': headers,
+	'title_of_list':'Banka Hareketleri',		
+	}
+	return render(request, 'koopmuhasebe/main-body-liste.html',context)
+
+
+@login_required
+def rapor_kasa_hareketleri(request):
+	headers = ['ID','Tarih','Tutar','Hareket Tipi', ]
+	rows = rapor_kasa_hareketleri_listesi()
+	rows2 =[]
+	for row in rows:				
+		rows2.append([ GetEditAdresi(row[3]) ,row[0],row[1], row[2],row[3],])
+	context = {
+	'rows': rows2,
+	'headers': headers,
+	'title_of_list':'Kasa Hareketleri',		
+	}
+	return render(request, 'koopmuhasebe/main-body-liste.html',context)
+
+def GetEditAdresi(var):	
+	dic = {"Virman" : "virman/edit/", 
+	"Satış" : "satis_view/",
+	"Gider" : "gider/edit/", 
+	"Üreticiye Ödeme" : "borc_alacak/edit/", 
+	"Üye Ödeme/Tahsilat": "kisi_odeme_tahsilat/edit/"}
+	return dic[var]
+	
 
 @login_required
 def rapor_satis_haftalik(request,pk):
@@ -277,7 +316,9 @@ def borc_alacak_edit(request, pk):
 	else:
 		form = BorcAlacakForm(instance=borcAlacakObj)
 
-	return render(request, 'koopmuhasebe/domain/main-body-form-borc-alacak.html', {'form': form, })  ###STOK GİRİŞLERİ
+	return render(request, 'koopmuhasebe/domain/main-body-form-borc-alacak.html', {'form': form, })  
+
+###STOK GİRİŞLERİ
 
 
 #STOK GİRİŞİ
@@ -453,7 +494,7 @@ def UrunFiyatVeBirimleriniGetir():
 @login_required
 def satis_liste(request):
 	a=User.get_all_permissions(request.user)
-	satis_listesi = Satis.objects.all().order_by('-id').annotate(toplamTutar=Sum('satisstokhareketleri__tutar'))
+	satis_listesi = Satis.objects.all().order_by('-id').annotate(toplamTutar=Sum('satisstokhareketleri__tutar'))[:200]
 	headers = ['Kayıt No','Tarih','Tutar','Kullanici',]
 	rows = []
 	for p in satis_listesi:		
@@ -513,6 +554,98 @@ def urun_edit(request,pk):
 	return render(request, 'koopmuhasebe/domain/main-body-form-urun_v2.html', {'form': form, 'pk':pk})
 
 
+###Kisi
+@login_required
+@permission_required("koopmuhasebe.change_kisi")
+def kisi_yeni(request): 		
+	if request.method == "POST":
+		form = KisiForm(request.POST)
+		if form.is_valid():
+			kisiObj = form.save(commit=False)			
+			kisiObj.save()
+			return redirect('/koopmuhasebe/kisi_liste')
+	else:
+		form = KisiForm()
+	return render(request, 'koopmuhasebe/domain/main-body-form-kisi.html', {'form': form})
+
+@login_required
+@permission_required("koopmuhasebe.change_kisi")
+def kisi_edit(request,pk):
+	kisiObj = get_object_or_404(kisi, pk=pk)
+	if request.method == "POST":
+		form = KisiForm(request.POST,instance=kisiObj)
+		if form.is_valid():
+			kisiObj = form.save(commit=False)			
+			form.save()
+			return redirect('/koopmuhasebe/kisi_liste')
+	else:
+		form = KisiForm(instance=kisiObj)
+	return render(request, 'koopmuhasebe/domain/main-body-form-kisi.html', {'form': form})
+
+
+def kisi_liste(request):
+	kisi_listesi = kisi.objects.all()
+	headers = ['Kayıt No','Kişi Adı','Notlar']
+	rows = []
+	for p in kisi_listesi:		
+		rows.append([p.id,p.kisi_adi,p.notlar[0:20]+'...' ])	
+	context = {'rows': rows, 'headers': headers,
+	'form_adresi':'kisi_yeni',
+	'title_of_list':'Kişiler',
+	'edit_adresi':'koopmuhasebe/kisi/edit/',	
+	'yeni_buton_adi':'Yeni Kişi'}
+	return render(request, 'koopmuhasebe/main-body-liste.html',context)
+
+#kisi_odeme_tahsilat
+
+@login_required
+def kisi_odeme_tahsilat_liste(request):
+	kisi_odeme_tahsilat_listesi = KisiOdemeTahsilat.objects.all().order_by('-id')
+	headers = ['Kayıt No','Tarih','Kişi' ,'Tutar', 'Ödeme Aracı' ,'Ödeme/Tahsilat',]
+	rows = []
+	for p in kisi_odeme_tahsilat_listesi:
+		rows.append([p.id,p.tarih,p.kisi,p.tutar, GetOdemeAraciEnum(p.odeme_araci) , GetOdemeTahsilatEnum(p.odememi_tahsilatmi),])
+	context = {'rows': rows, 'headers': headers,
+	'title_of_list':'Ödeme Tahsilat Hareketleri',
+	'form_adresi':'kisi_odeme_tahsilat_yeni',
+	'edit_adresi':'kisi_odeme_tahsilat/edit/',
+	'yeni_buton_adi':'Yeni Ödeme/Tahsilat Girişi'}
+	return render(request, 'koopmuhasebe/main-body-liste.html',context)
+
+def GetOdemeTahsilatEnum(var):
+	#if var == 1:
+	return 'Tahsilat' if var ==1 else 'Ödeme'
+	#else:
+	#	return 'Ödeme'
+
+@login_required
+def kisi_odeme_tahsilat_yeni(request):
+		if request.method == "POST":
+			form = KisiOdemeTahsilatForm(request.POST)
+			if form.is_valid():
+				kisiOdemeTahsilatObj = form.save(commit=False)
+				kisiOdemeTahsilatObj.kullanici = request.user
+				kisiOdemeTahsilatObj.save()
+				return redirect('/koopmuhasebe/kisi_odeme_tahsilat_liste')
+		else:
+			form = KisiOdemeTahsilatForm()
+
+		return render(request, 'koopmuhasebe/domain/main-body-form-kisi-odeme-tahsilat.html', {'form': form, })
+
+@login_required
+def kisi_odeme_tahsilat_edit(request, pk):
+	kisiOdemeTahsilatObj = get_object_or_404(KisiOdemeTahsilat, pk=pk)
+	if request.method == "POST":
+		form = KisiOdemeTahsilatForm(request.POST, instance=kisiOdemeTahsilatObj)
+		if form.is_valid():
+			kisiOdemeTahsilatObj = form.save(commit=False)
+			kisiOdemeTahsilatObj.kullanici = request.user
+			form.save()
+			return redirect('/koopmuhasebe/kisi_odeme_tahsilat_liste')
+	else:
+		form = KisiOdemeTahsilatForm(instance=kisiOdemeTahsilatObj)
+
+	return render(request, 'koopmuhasebe/domain/main-body-form-kisi-odeme-tahsilat.html', {'form': form, })  
 
 ###ÜRETİCİ
 @login_required

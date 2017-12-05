@@ -45,12 +45,20 @@ urlpatterns = [
 
 	url(r'dashboard', views.dashboard, name='dashboard'),	
 
-
-
 	url(r'test', views.test, name='test'),
 	
 	url('^', include('django.contrib.auth.urls')),	
 	url(r'login/$', auth_views.LoginView.as_view(template_name='koopmuhasebe/login.html')),	
     url(r'^password_reset/$', auth_views.password_reset, name='password_reset'),
 
+	url(r'kisi_liste', views.kisi_liste, name='kisi_liste'),
+	url(r'kisi_yeni', views.kisi_yeni, name='kisi_yeni'),
+	url(r'kisi/edit/(?P<pk>\d+)$', views.kisi_edit, name='kisi_edit'),		
+
+	url(r'kisi_odeme_tahsilat_liste', views.kisi_odeme_tahsilat_liste, name='kisi_odeme_tahsilat_liste'),
+	url(r'kisi_odeme_tahsilat_yeni', views.kisi_odeme_tahsilat_yeni, name='kisi_odeme_tahsilat_yeni'),
+	url(r'kisi_odeme_tahsilat/edit/(?P<pk>\d+)$', views.kisi_odeme_tahsilat_edit, name='kisi_odeme_tahsilat_edit'),		
+
+	url(r'rapor_kasa_hareketleri', views.rapor_kasa_hareketleri, name='rapor_kasa_hareketleri'),		
+	url(r'rapor_banka_hareketleri', views.rapor_banka_hareketleri, name='rapor_banka_hareketleri'),		
 ]

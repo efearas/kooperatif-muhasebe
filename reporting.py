@@ -84,10 +84,88 @@ def rapor_stok_durumu():
 		rows = []
 		for row in cursor.fetchall():
 			rows.append([row[0],row[1],row[2],row[3],row[4],])
-			yekun = yekun + row[4]
+			if row[4] != None:
+				yekun = yekun + row[4]
 	lastRow = (0,0,0,0,yekun)
 	tuple = (rows,lastRow)
 	return tuple
+
+
+def rapor_kasa_hareketleri_listesi():
+	query = """
+			WITH
+
+			UninionedKasaHareketleri AS(
+				--Satis
+				SELECT satis_id as ID,koopmuhasebe_satis.tarih as Tarih, sum(tutar) as Tutar, 'Satış' as HareketTipi FROM koopmuhasebe_satis
+				INNER JOIN koopmuhasebe_satisstokhareketleri
+				ON koopmuhasebe_satis.id = koopmuhasebe_satisstokhareketleri.satis_id
+				GROUP BY satis_id,koopmuhasebe_satis.tarih
+				UNION ALL
+				-- Gider
+				SELECT id as ID, tarih as Tarih, -(tutar) as Tutar, 'Gider' as HareketTipi  from koopmuhasebe_gider 
+				WHERE odeme_araci=2
+				UNION ALL
+				--virman kasaya giris
+				select id, tarih, tutar, 'Virman' from koopmuhasebe_virmanveduzeltme 
+				WHERE giris_hesabi =2 
+				UNION ALL
+				--virman kasadan cikis
+				select id, tarih, -(tutar), 'Virman' from koopmuhasebe_virmanveduzeltme 
+				WHERE cikis_hesabi=2
+				UNION ALL
+				-- ureticiye odeme
+				SELECT id, tarih, -(tutar), 'Üreticiye Ödeme' from koopmuhasebe_borcalacak 
+				WHERE odeme_araci=2
+				UNION ALL
+				-- uye odeme tahsilat
+				SELECT id,tarih,( odememi_tahsilatmi*tutar), 'Üye Ödeme/Tahsilat' from koopmuhasebe_kisiodemetahsilat 
+				WHERE odeme_araci=2
+			)
+
+			SELECT * FROM UninionedKasaHareketleri
+			ORDER BY Tarih DESC			
+			"""
+	rows = []
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = cursor.fetchall()		
+	return rows
+
+def rapor_banka_hareketleri_listesi():
+	query = """
+			WITH
+			UninionedBankaHareketleri AS(
+				-- Gider
+				SELECT id as ID, tarih as Tarih, -(tutar) as Tutar, 'Gider' as HareketTipi  from koopmuhasebe_gider 
+				WHERE odeme_araci=1
+				UNION ALL
+				--virman bankaya giris
+				select id, tarih, tutar, 'Virman' from koopmuhasebe_virmanveduzeltme 
+				WHERE giris_hesabi =1
+				UNION ALL
+				--virman bankadan cikis
+				select id, tarih, -(tutar), 'Virman' from koopmuhasebe_virmanveduzeltme 
+				WHERE cikis_hesabi=1
+				UNION ALL
+				-- ureticiye odeme
+				SELECT id, tarih, -(tutar), 'Üreticiye Ödeme' from koopmuhasebe_borcalacak 
+				WHERE odeme_araci=1
+				UNION ALL
+				-- uye odeme tahsilat
+				SELECT id,tarih,( odememi_tahsilatmi*tutar), 'Üye Ödeme/Tahsilat' from koopmuhasebe_kisiodemetahsilat 
+				WHERE odeme_araci=1 				
+			)
+
+			SELECT * FROM UninionedBankaHareketleri
+			ORDER BY Tarih DESC
+			"""
+	rows = []
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = cursor.fetchall()		
+	return rows
+
 
 def rapor_kasa_durumu():
 	query = """
@@ -108,6 +186,10 @@ def rapor_kasa_durumu():
 			UNION ALL
 			-- ureticiye odeme
 			select sum(borcmu_alacakmi*tutar) from koopmuhasebe_borcalacak where odeme_araci=2
+			UNION ALL
+			-- uye odeme tahsilat
+			select sum(odememi_tahsilatmi*tutar) from koopmuhasebe_kisiodemetahsilat where odeme_araci=2
+
 			)
 
 			SELECT SUM(tutar) FROM UnionedKasaHareketleri
@@ -133,7 +215,11 @@ def rapor_banka_durumu():
 			select sum(-tutar) from koopmuhasebe_virmanveduzeltme WHERE cikis_hesabi =1 
 			UNION ALL
 			-- ureticiye odeme
-			select sum(borcmu_alacakmi*tutar) from koopmuhasebe_borcalacak where odeme_araci=1)
+			select sum(borcmu_alacakmi*tutar) from koopmuhasebe_borcalacak where odeme_araci=1
+			UNION ALL
+			-- uyelere odeme/tahsilat
+			select sum(odememi_tahsilatmi*tutar) from koopmuhasebe_kisiodemetahsilat where odeme_araci=1
+			)
 
 			SELECT SUM(tutar) FROM UnionedBankaHareketleri
 			"""
