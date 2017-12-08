@@ -29,26 +29,10 @@ from django.utils import timezone
 from django.utils.timezone import get_current_timezone
 from django.utils.timezone import localtime
 
+from .functions import *
+
 def test(request):		
-	_tarih = dt.datetime.today()
-	#_tarih = "2017-11-29 10:12"
-	unaware_start_date = datetime.datetime.strptime("2017-11-29 10:13", "%Y-%m-%d %H:%M")
-	#aware_start_date = pytz.utc.localize(unaware_start_date)
-	dt_aware = timezone.make_aware(unaware_start_date, timezone.get_current_timezone())
-	query = """    		
-			SELECT urun_id, 
-					zaman,
-					fiyat
-			FROM koopmuhasebe_urun_fiyat
-			WHERE ZAMAN < '{tarih}' AND urun_id =8
-			"""	
-	
-	query = query.format(tarih=dt_aware)
-	
-	rows = []
-	with connection.cursor() as cursor:
-		cursor.execute(query)
-		rowz = cursor.fetchall()		
+	dic = birim_fiyat_hesapla(7.50,25.50, 30, False)
 	return render(request, 'koopmuhasebe/test.html')
 
 ###RAPORLAR
