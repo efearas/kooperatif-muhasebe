@@ -40,7 +40,7 @@ class uretici(models.Model):
 	uretici_adi = models.CharField(max_length=200)
 	adres = models.CharField(max_length=500)
 	banka_bilgileri = models.CharField(max_length=500)
-	kullanici = models.ForeignKey(User)
+	kullanici = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 	tarih = models.DateTimeField(auto_now_add=True)
 	def __str__(self):
 		return self.uretici_adi
