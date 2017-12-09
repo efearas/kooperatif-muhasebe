@@ -56,14 +56,14 @@ class BorcAlacak(models.Model):
 		(2, 'Nakit'),
 	)
 
-	uretici = models.ForeignKey(uretici)
+	uretici = models.ForeignKey(uretici, on_delete=models.DO_NOTHING)
 	tarih = models.DateTimeField()
 	tutar = models.DecimalField(null=True, max_digits=7, decimal_places=2)
 	borcmu_alacakmi = models.IntegerField(null=True, choices=BORC_ALACAK_CHOICES,
         default=-1,)
 	odeme_araci = models.IntegerField(null=True, choices=ODEME_ARACI_CHOICES, blank=True,)
 	notlar = models.CharField(max_length=1500)
-	kullanici = models.ForeignKey(User)
+	kullanici = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 	dis_sistem_tipi = models.IntegerField(null=True) #stok girisi veya programin baska yerlerinden yapilan girislerde kullanilacak
 	dis_sistem_id = models.IntegerField(null=True) #stok_girisi_id
 
@@ -86,14 +86,14 @@ class KisiOdemeTahsilat(models.Model):
 		(2, 'Kasa'),
 	)
 
-	kisi = models.ForeignKey(kisi)
+	kisi = models.ForeignKey(kisi,  on_delete=models.DO_NOTHING)
 	tarih = models.DateTimeField()
 	tutar = models.DecimalField(null=True, max_digits=7, decimal_places=2)
 	odememi_tahsilatmi = models.IntegerField(null=True, choices=ODEME_TAHSILAT_CHOICES,
         default=1,)
 	odeme_araci = models.IntegerField(null=True, choices=ODEME_ARACI_CHOICES, blank=True,)
 	notlar = models.CharField(max_length=1500)
-	kullanici = models.ForeignKey(User)
+	kullanici = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 
 	
 
@@ -101,23 +101,23 @@ class KisiOdemeTahsilat(models.Model):
 
 
 class urun(models.Model):
-	urun_kategorisi = models.ForeignKey(UrunKategorisi)
-	kdv_kategorisi = models.ForeignKey(KDVKategorisi, null=True)
+	urun_kategorisi = models.ForeignKey(UrunKategorisi, on_delete=models.DO_NOTHING)
+	kdv_kategorisi = models.ForeignKey(KDVKategorisi, null=True, on_delete=models.DO_NOTHING)
 	urun_adi = models.CharField(max_length=200)
-	uretici = models.ForeignKey(uretici)
+	uretici = models.ForeignKey(uretici, on_delete=models.DO_NOTHING)
 	uye_fiyati = models.DecimalField(null=True,  max_digits=7,decimal_places=2)
 	musteri_fiyati = models.DecimalField(null=True,   max_digits=7,decimal_places=2)
-	birim = models.ForeignKey(Birim, null=True)
+	birim = models.ForeignKey(Birim, null=True, on_delete=models.DO_NOTHING)
 	kdv_orani = models.IntegerField(null=True)	
 	dayanisma_urunu = models.BooleanField()
 	def __str__(self):
 		return self.urun_adi
 
 class urun_fiyat(models.Model):
-	urun = models.ForeignKey(urun)
+	urun = models.ForeignKey(urun, on_delete=models.DO_NOTHING)
 	zaman = models.DateTimeField()
 	fiyat = models.DecimalField(max_digits=7, decimal_places=2)
-	kullanici = models.ForeignKey(User)
+	kullanici = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 		
 class Gider(models.Model):
 	ODEME_ARACI_CHOICES = (
@@ -125,28 +125,28 @@ class Gider(models.Model):
 		(2, 'Nakit'),
 	)
 	tarih  = models.DateTimeField()
-	gider_tipi = models.ForeignKey(GiderTipi)
+	gider_tipi = models.ForeignKey(GiderTipi, on_delete=models.DO_NOTHING)
 	tutar = models.DecimalField(null=True,  max_digits=7,decimal_places=2)
 	notlar = models.CharField(max_length=500)
 	odeme_araci = models.IntegerField(null=True, choices=ODEME_ARACI_CHOICES, blank=True,)
 
 class StokGirisi(models.Model):
-	stok_hareketi_tipi = models.ForeignKey(StokHareketiTipi)
+	stok_hareketi_tipi = models.ForeignKey(StokHareketiTipi, on_delete=models.DO_NOTHING)
 	tarih = models.DateTimeField()
-	urun = models.ForeignKey(urun)
+	urun = models.ForeignKey(urun, on_delete=models.DO_NOTHING)
 	miktar = models.IntegerField()
 	agirlik = models.DecimalField(null=True,  max_digits=5,decimal_places=2)
 	notlar = models.CharField(max_length=500)
 	
 class Satis(models.Model):
 	tarih = models.DateTimeField()
-	kullanici = models.ForeignKey(User)
+	kullanici = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 	def __str__(self):
 		return str(self.tarih)
 
 class SatisStokHareketleri(models.Model):
 	satis = models.ForeignKey(Satis, on_delete=models.CASCADE)
-	urun = models.ForeignKey(urun)
+	urun = models.ForeignKey(urun, on_delete=models.DO_NOTHING)
 	miktar = models.IntegerField()
 	tutar = models.DecimalField(null=True,   max_digits=7,decimal_places=2)	
 	def __str__(self):
@@ -170,4 +170,4 @@ class VirmanVeDuzeltme(models.Model):
 	giris_hesabi = models.IntegerField(null=True, choices=HESAP_CHOICES,)
 	tutar = models.DecimalField(max_digits=7,decimal_places=2)	
 	notlar = models.CharField(max_length=500)
-	kullanici = models.ForeignKey(User, null=True)
+	kullanici = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)
