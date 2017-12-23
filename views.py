@@ -511,10 +511,10 @@ def urun_yeni(request):
 @login_required
 def urun_liste(request):
 	urun_listesi = urun.objects.all()
-	headers = ['Kayıt No','Ürün','Üretici','Üye Fiyatı','Müşteri Fiyatı']
-	rows = []
-	for p in urun_listesi:		
-		rows.append([p.id,p.urun_adi,p.uretici,p.uye_fiyati,p.musteri_fiyati])	
+	headers = ['Kayıt No','Ürün','Üretici','Fiyat']
+	rows = urunler_ve_fiyatlari()
+	'''for p in urun_listesi:		
+		rows.append([p.id,p.urun_adi,p.uretici,p.uye_fiyati,p.musteri_fiyati])	'''
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Ürünler',
 	'form_adresi':'urun_yeni',

@@ -232,8 +232,6 @@ def rapor_banka_durumu():
 
 
 def stokta_varolan_urunler():
-
-
 	query = """
     			WITH
     			UnionedTable AS(	
@@ -259,6 +257,32 @@ def stokta_varolan_urunler():
 		for row in cursor.fetchall():
 			rows.append([row[0], row[1], row[2], ])
 	return rows
+
+def urunler_ve_fiyatlari():
+	query = """    			
+			WITH 
+				CTE AS 
+				(
+					SELECT urun_id, 
+							zaman,
+							fiyat,
+							ROW_NUMBER() OVER (PARTITION BY urun_id ORDER BY zaman DESC)
+					FROM koopmuhasebe_urun_fiyat
+				)
+			SELECT   koopmuhasebe_urun.id, koopmuhasebe_urun.urun_adi, koopmuhasebe_uretici.uretici_adi,  CTE.fiyat 
+			FROM koopmuhasebe_urun
+			INNER JOIN CTE ON CTE.urun_id = koopmuhasebe_urun.id
+			INNER JOIN koopmuhasebe_uretici ON koopmuhasebe_urun.uretici_id = koopmuhasebe_uretici.id
+			WHERE CTE.row_number =1
+			"""
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = []
+		for row in cursor.fetchall():
+			rows.append([row[0], row[1], row[2],row[3], ])
+	return rows
+
+
 
 def urunlerin_guncel_fiyatlari(_tarih):
 	query = """
