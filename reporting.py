@@ -377,6 +377,22 @@ def stogu_azalan_urunler():
 			rows.append([row[0],])				
 	return rows
 
+def borc_alacak_dosya_bilgisi_ile():
+	query = """
+		SELECT koopmuhasebe_borcalacak.id, koopmuhasebe_borcalacak.tarih, uretici_adi, tutar, odeme_araci, borcmu_alacakmi, a.model_id
+FROM koopmuhasebe_borcalacak
+LEFT JOIN (SELECT DISTINCT(model_id) FROM koopmuhasebe_dosya WHERE model_adi = 'borc_alacak') a 
+ON koopmuhasebe_borcalacak.id = a.model_id
+INNER JOIN koopmuhasebe_uretici ON koopmuhasebe_uretici.id = koopmuhasebe_borcalacak.uretici_id
+ORDER BY koopmuhasebe_borcalacak.id DESC
+		"""
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = []
+		for row in cursor.fetchall():
+			rows.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6],])				
+	return rows
+
 
 def rapor_ciro_durumu(baslangicTarihi, bitisTarihi):
 	baslangicTarihi = str(baslangicTarihi) + ' 00:00:00'

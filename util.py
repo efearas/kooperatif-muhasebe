@@ -14,3 +14,7 @@ def get_or_none(classmodel, **kwargs):
         return classmodel.objects.get(**kwargs)
     except classmodel.DoesNotExist:
         return None
+
+def get_file_extension(_filename):
+	arr = _filename.split(".")
+	return arr[len(arr)-1]

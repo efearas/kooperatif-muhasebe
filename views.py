@@ -30,6 +30,8 @@ from django.utils.timezone import get_current_timezone
 from django.utils.timezone import localtime
 
 from .functions import *
+import os
+
 
 def test(request):		
 	dic = birim_fiyat_hesapla(7.50,25.50, 30, False)
@@ -244,11 +246,15 @@ def virman_edit(request,pk):
 #BORC ALACAK
 @login_required
 def borc_alacak_liste(request):
-	borc_alacak_listesi = BorcAlacak.objects.all().order_by('-id')
-	headers = ['Kayıt No','Tarih','Üretici' ,'Tutar', 'Ödeme Aracı' ,'Borç/Alacak',]
+	#borc_alacak_listesi = BorcAlacak.objects.all().order_by('-id')
+	borc_alacak_listesi = borc_alacak_dosya_bilgisi_ile()
+	headers = ['Kayıt No','Tarih','Üretici' ,'Tutar', 'Ödeme Aracı' ,'Borç/Alacak','Evrak']
 	rows = []
 	for p in borc_alacak_listesi:
-		rows.append([p.id,p.tarih,p.uretici,p.tutar, GetOdemeAraciEnum(p.odeme_araci) , GetBorcAlacakEnum(p.borcmu_alacakmi),])
+		evrak_html = ""
+		if p[6] != None:
+			evrak_html = "<i class=\"fa fa-file-text-o fa-fw\"></i>"
+		rows.append([p[0],p[1],p[2],p[3],GetOdemeAraciEnum(p[4]),GetBorcAlacakEnum(p[5]),evrak_html,])
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Borç Alacak Hareketleri',
 	'form_adresi':'borc_alacak_yeni',
@@ -264,6 +270,9 @@ def borc_alacak_yeni(request):
 				borcAlacakObj = form.save(commit=False)
 				borcAlacakObj.kullanici = request.user
 				borcAlacakObj.save()
+				if request.FILES['myfile']:
+					for f in request.FILES.getlist('myfile'):						
+						dosya.SaveFile(f,"borc_alacak", borcAlacakObj.id)
 				return redirect('/koopmuhasebe/borc_alacak_liste')
 		else:
 			form = BorcAlacakForm()
@@ -289,6 +298,10 @@ def GetBorcAlacakEnum(var):
 
 @login_required
 def borc_alacak_edit(request, pk):
+	BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+	MEDIA_ROOT = os.path.join(BASE_DIR, 'koopmuhasebe/media')
+	path = request.get_full_path()
+	path2 =  request.build_absolute_uri() 
 	borcAlacakObj = get_object_or_404(BorcAlacak, pk=pk)
 	if request.method == "POST":
 		form = BorcAlacakForm(request.POST, instance=borcAlacakObj)
@@ -296,11 +309,14 @@ def borc_alacak_edit(request, pk):
 			borcAlacakObj = form.save(commit=False)
 			borcAlacakObj.kullanici = request.user
 			form.save()
+			if request.FILES['myfile']:
+					for f in request.FILES.getlist('myfile'):						
+						dosya.SaveFile(f,"borc_alacak", borcAlacakObj.id)
 			return redirect('/koopmuhasebe/borc_alacak_liste')
 	else:
 		form = BorcAlacakForm(instance=borcAlacakObj)
-
-	return render(request, 'koopmuhasebe/domain/main-body-form-borc-alacak.html', {'form': form, })  
+		file_rows = dosya.GetFileList("borc_alacak", borcAlacakObj.id)
+	return render(request, 'koopmuhasebe/domain/main-body-form-borc-alacak.html', {'form': form,'file_rows': file_rows, })  
 
 ###STOK GİRİŞLERİ
 

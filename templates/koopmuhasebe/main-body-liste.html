@@ -42,7 +42,7 @@
                                                 {% for column in row %}
 
                                                     {% if edit_adresi != none %}
-                                                    <td><a href="{{edit_adresi}}{{row.0}}"> {{column}}</a></td>													                                                                          
+                                                    <td><a href="{{edit_adresi}}{{row.0}}"> {{column|safe}}</a></td>													                                                                          
                                                     {%else%}
                                                         {% if forloop.counter0 != 0 %}
                                                             <td><a href="{{row.0}}{{row.1}}"> {{column}}</a></td>													                  

@@ -2,9 +2,11 @@
 
 from django.db import models
 from django.contrib.auth.models import User
+import uuid
+from django.core.files.storage import FileSystemStorage
+from .util import *
 
 
-# Create your models here.
 
 class Birim(models.Model):
 	birim_adi = models.CharField(max_length=50)
@@ -19,16 +21,13 @@ class GiderTipi(models.Model):
 class StokHareketiTipi(models.Model):
 	stok_hareket_tipi_adi = models.CharField(max_length=50)
 	def __str__(self):
-		return self.stok_hareket_tipi_adi
-		#return self.stok_hareket_tipi_adi.encode('utf-8')
+		return self.stok_hareket_tipi_adi		
 
 class UrunKategorisi(models.Model):
 	urun_kategori_adi = models.CharField(max_length=50)
 	def __str__(self):
 		return self.urun_kategori_adi
 		
-###
-
 class KDVKategorisi(models.Model):
 	kategori_adi = models.CharField(max_length=200)
 	kdv_orani = models.IntegerField()
@@ -74,6 +73,28 @@ class kisi(models.Model):
 	notlar = models.CharField(max_length=1500, null=True)
 	def __str__(self):
 		return self.kisi_adi
+
+class dosya(models.Model):
+	model_adi = models.CharField(max_length=100) 	
+	model_id  = models.IntegerField(null=True) 
+	guid = models.CharField(max_length=100)
+	gercek_dosya_adi = models.CharField(max_length=100, null=True)
+	def __str__(self):
+		return self.guid
+	@staticmethod
+	def SaveFile(_file, _model_adi, _model_id):
+		fs = FileSystemStorage()
+		file_name = str(uuid.uuid4()) + "." + get_file_extension(_file.name)
+		fs.save(file_name, _file)
+		dosya.objects.create(model_adi = _model_adi, model_id = _model_id, guid = file_name, gercek_dosya_adi= _file.name)				
+		return
+	@staticmethod
+	def GetFileList(_model_adi, _model_id):
+		rows = dosya.objects.filter(model_adi=_model_adi,model_id=_model_id).values('gercek_dosya_adi','guid').order_by('-id')
+		rows2 = []
+		for p in rows:		
+			rows2.append([p['gercek_dosya_adi'],p['guid'],])		
+		return rows2
 
 class KisiOdemeTahsilat(models.Model):
 	ODEME_TAHSILAT_CHOICES = (

@@ -7,5 +7,25 @@
 			{% block page-body %}{% endblock%}
 	    </div>	
 	</div>    		
+<div id="divFixed" class="Fixed">  </div>
 </body>
+
+<script type="text/javascript">
+function ShowDevAlert()
+{
+	//Development ve test ortamlarinda uyari gosterir
+	if(window.location.href.startsWith("http://127.0.0.1"))
+	{
+		document.getElementById("divFixed").style="display:block";
+		document.getElementById("divFixed").innerHTML="geliştirme ortamindasin";
+	}	
+	if(window.location.href.startsWith("http://testmuhasebe"))
+	{
+		document.getElementById("divFixed").style="display:block";
+		document.getElementById("divFixed").innerHTML="test ortamindasin";
+	}	
+}
+ShowDevAlert();
+</script>
+
 {% endblock %}
