@@ -267,13 +267,17 @@ def urunler_ve_fiyatlari():
 							zaman,
 							fiyat,
 							ROW_NUMBER() OVER (PARTITION BY urun_id ORDER BY zaman DESC)
-					FROM koopmuhasebe_urun_fiyat
+					FROM koopmuhasebe_urun_fiyat					
+				),
+				CTE_TOP AS
+				(
+					SELECT * FROM CTE
+					WHERE CTE.row_number=1
 				)
-			SELECT   koopmuhasebe_urun.id, koopmuhasebe_urun.urun_adi, koopmuhasebe_uretici.uretici_adi,  CTE.fiyat 
+			SELECT   koopmuhasebe_urun.id, koopmuhasebe_urun.urun_adi, koopmuhasebe_uretici.uretici_adi,  CTE_TOP.fiyat 
 			FROM koopmuhasebe_urun
-			INNER JOIN CTE ON CTE.urun_id = koopmuhasebe_urun.id
-			INNER JOIN koopmuhasebe_uretici ON koopmuhasebe_urun.uretici_id = koopmuhasebe_uretici.id
-			WHERE CTE.row_number =1
+			LEFT JOIN CTE_TOP ON CTE_TOP.urun_id = koopmuhasebe_urun.id
+			INNER JOIN koopmuhasebe_uretici ON koopmuhasebe_urun.uretici_id = koopmuhasebe_uretici.id			
 			"""
 	with connection.cursor() as cursor:
 		cursor.execute(query)
