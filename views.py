@@ -270,7 +270,7 @@ def borc_alacak_yeni(request):
 				borcAlacakObj = form.save(commit=False)
 				borcAlacakObj.kullanici = request.user
 				borcAlacakObj.save()
-				if request.FILES['myfile']:
+				if 'myfile' in request.FILES:
 					for f in request.FILES.getlist('myfile'):						
 						dosya.SaveFile(f,"borc_alacak", borcAlacakObj.id)
 				return redirect('/koopmuhasebe/borc_alacak_liste')
@@ -308,10 +308,10 @@ def borc_alacak_edit(request, pk):
 		if form.is_valid():
 			borcAlacakObj = form.save(commit=False)
 			borcAlacakObj.kullanici = request.user
-			form.save()
-			if request.FILES['myfile']:
-					for f in request.FILES.getlist('myfile'):						
-						dosya.SaveFile(f,"borc_alacak", borcAlacakObj.id)
+			form.save()			
+			if 'myfile' in request.FILES:
+				for f in request.FILES.getlist('myfile'):						
+					dosya.SaveFile(f,"borc_alacak", borcAlacakObj.id)
 			return redirect('/koopmuhasebe/borc_alacak_liste')
 	else:
 		form = BorcAlacakForm(instance=borcAlacakObj)
