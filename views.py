@@ -219,7 +219,7 @@ def virman_liste(request):
 	headers = ['Kayıt No','Tarih','Çıkış Hesabı' ,'Giriş Hesabı', 'Tutar', 'Kullanıcı',]
 	rows = []
 	for p in virman_listesi:		
-		rows.append([p.id,p.tarih, GetHesapEnum(p.cikis_hesabi),GetHesapEnum(p.giris_hesabi),p.tutar, p.kullanici,])
+		rows.append([p.id,localtime(p.tarih).strftime("%Y-%m-%d %H:%M:%S"), GetHesapEnum(p.cikis_hesabi),GetHesapEnum(p.giris_hesabi),p.tutar, p.kullanici,])
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Virman ve Düzeltmeler',
 	'form_adresi':'virman_yeni',
@@ -254,7 +254,7 @@ def borc_alacak_liste(request):
 		evrak_html = ""
 		if p[6] != None:
 			evrak_html = "<i class=\"fa fa-file-text-o fa-fw\"></i>"
-		rows.append([p[0],p[1],p[2],p[3],GetOdemeAraciEnum(p[4]),GetBorcAlacakEnum(p[5]),evrak_html,])
+		rows.append([p[0],localtime(p[1]).strftime("%Y-%m-%d %H:%M:%S"),p[2],p[3],GetOdemeAraciEnum(p[4]),GetBorcAlacakEnum(p[5]),evrak_html,])
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Borç Alacak Hareketleri',
 	'form_adresi':'borc_alacak_yeni',
@@ -348,7 +348,7 @@ def stok_girisi_liste(request):
 	headers = ['Kayıt No','Tarih','Ürün' ,'Miktar', 'Stok Hareketi Tipi',]
 	rows = []
 	for p in stok_girisleri_listesi:		
-		rows.append([p.id,p.tarih,p.urun,p.miktar, p.stok_hareketi_tipi,])
+		rows.append([p.id,localtime(p.tarih).strftime("%Y-%m-%d %H:%M:%S"),p.urun,p.miktar, p.stok_hareketi_tipi,])
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Stok Girişleri',
 	'form_adresi':'stok_girisi_yeni',
@@ -498,7 +498,7 @@ def satis_liste(request):
 	headers = ['Kayıt No','Tarih','Tutar','Kullanici',]
 	rows = []
 	for p in satis_listesi:		
-		rows.append([p.id,p.tarih,p.toplamTutar,p.kullanici,])	
+		rows.append([p.id, localtime(p.tarih).strftime("%Y-%m-%d %H:%M:%S"),p.toplamTutar,p.kullanici,])	
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Satışlar',
 	'form_adresi':'satis_view',
