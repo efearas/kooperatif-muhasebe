@@ -421,7 +421,7 @@ def gider_liste(request):
 	headers = ['Kayıt No','Tarih','Gider Tipi' ,'Tutar','Ödeme Aracı',]
 	rows = []
 	for p in gider_listesi:		
-		rows.append([p.id,p.tarih,p.gider_tipi,p.tutar,GetOdemeAraciEnum(p.odeme_araci) ,])	
+		rows.append([p.id,localtime(p.tarih).strftime("%Y-%m-%d %H:%M:%S"),p.gider_tipi,p.tutar,GetOdemeAraciEnum(p.odeme_araci) ,])	
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Giderler',
 	'form_adresi':'gider_yeni',
