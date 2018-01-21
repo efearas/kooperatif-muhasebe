@@ -65,7 +65,16 @@ urlpatterns = [
 	url(r'rapor_kasa_hareketleri', views.rapor_kasa_hareketleri, name='rapor_kasa_hareketleri'),		
 	url(r'rapor_banka_hareketleri', views.rapor_banka_hareketleri, name='rapor_banka_hareketleri'),		
 
-	#url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
+
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+'''
+# DEBUG TOOLBAR
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
+'''

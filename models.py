@@ -131,6 +131,7 @@ class urun(models.Model):
 	birim = models.ForeignKey(Birim, null=True, on_delete=models.DO_NOTHING)
 	kdv_orani = models.IntegerField(null=True)	
 	dayanisma_urunu = models.BooleanField()
+	kullanici = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
 	def __str__(self):
 		return self.urun_adi
 
@@ -150,6 +151,7 @@ class Gider(models.Model):
 	tutar = models.DecimalField(null=True,  max_digits=7,decimal_places=2)
 	notlar = models.CharField(max_length=500)
 	odeme_araci = models.IntegerField(null=True, choices=ODEME_ARACI_CHOICES, blank=True,)
+	kullanici = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
 
 class StokGirisi(models.Model):
 	stok_hareketi_tipi = models.ForeignKey(StokHareketiTipi, on_delete=models.DO_NOTHING)
@@ -158,6 +160,7 @@ class StokGirisi(models.Model):
 	miktar = models.IntegerField()
 	agirlik = models.DecimalField(null=True,  max_digits=5,decimal_places=2)
 	notlar = models.CharField(max_length=500)
+	kullanici = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
 	
 class Satis(models.Model):
 	tarih = models.DateTimeField()

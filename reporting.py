@@ -60,24 +60,33 @@ def rapor_aylik_urun_satis():
 	return tuple
 
 
+def table_stok_durumu():
+	CTE_query = """
+				UnionedTable AS
+				(	
+				select urun_id,(miktar*-1) as miktar from koopmuhasebe_satisstokhareketleri
+				UNION ALL
+				select urun_id,miktar from koopmuhasebe_stokgirisi WHERE stok_hareketi_tipi_id IN(1,3)
+                UNION ALL
+				select urun_id,(miktar*-1) from koopmuhasebe_stokgirisi WHERE stok_hareketi_tipi_id IN (2,4)	
+				),
+				table_stok_durumu AS(	
+				select urun_id,SUM(miktar) as miktar from UnionedTable
+				GROUP BY urun_id	
+				)
+				"""
+	return CTE_query
+
 def rapor_stok_durumu():
 	query = """
 			WITH
-			UnionedTable AS(	
-				select urun_id,(miktar*-1) as miktar from koopmuhasebe_satisstokhareketleri
-				UNION ALL
-				select urun_id,miktar from koopmuhasebe_stokgirisi	
-			),
-			UnionedTableGrouped AS(	
-				select urun_id,SUM(miktar) as miktar from UnionedTable
-				GROUP BY urun_id	
-			)
-
-			SELECT  koopmuhasebe_urun.id ,koopmuhasebe_urun.urun_adi, UnionedTableGrouped.miktar,koopmuhasebe_urun.musteri_fiyati, (UnionedTableGrouped.miktar * koopmuhasebe_urun.musteri_fiyati) as urunToplamDegeri FROM UnionedTableGrouped
+			{table_stok_durumu}
+			SELECT  koopmuhasebe_urun.id ,koopmuhasebe_urun.urun_adi, table_stok_durumu.miktar,koopmuhasebe_urun.musteri_fiyati, (table_stok_durumu.miktar * koopmuhasebe_urun.musteri_fiyati) as urunToplamDegeri FROM table_stok_durumu
 			INNER JOIN koopmuhasebe_urun
-			ON UnionedTableGrouped.urun_id = koopmuhasebe_urun.id
-			ORDER BY UnionedTableGrouped.miktar ASC
+			ON table_stok_durumu.urun_id = koopmuhasebe_urun.id
+			ORDER BY table_stok_durumu.miktar ASC
 			"""
+	query = query.format(table_stok_durumu = table_stok_durumu())
 	yekun = 0
 	with connection.cursor() as cursor:
 		cursor.execute(query)
@@ -90,6 +99,25 @@ def rapor_stok_durumu():
 	tuple = (rows,lastRow)
 	return tuple
 
+def stokta_varolan_urunler():
+	query = """
+    			WITH
+    			{table_stok_durumu}
+    			SELECT  koopmuhasebe_urun.id ,koopmuhasebe_urun.urun_adi,uretici_adi 
+                FROM table_stok_durumu                
+    			INNER JOIN koopmuhasebe_urun ON table_stok_durumu.urun_id = koopmuhasebe_urun.id
+                INNER JOIN koopmuhasebe_uretici ON koopmuhasebe_urun.uretici_id = koopmuhasebe_uretici.id
+    			WHERE miktar > 0
+    			ORDER BY koopmuhasebe_urun.urun_adi ASC
+    			"""
+	query = query.format(table_stok_durumu = table_stok_durumu())
+	yekun = 0
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = []
+		for row in cursor.fetchall():
+			rows.append([row[0], row[1], row[2], ])
+	return rows
 
 def rapor_kasa_hareketleri_listesi():
 	query = """
@@ -231,32 +259,7 @@ def rapor_banka_durumu():
 	return yekun
 
 
-def stokta_varolan_urunler():
-	query = """
-    			WITH
-    			UnionedTable AS(	
-    				select urun_id,(miktar*-1) as miktar from koopmuhasebe_satisstokhareketleri
-    				UNION ALL
-    				select urun_id,miktar from koopmuhasebe_stokgirisi	
-    			),
-    			UnionedTableGrouped AS(	
-    				select urun_id,SUM(miktar) as miktar from UnionedTable
-    				GROUP BY urun_id	
-    			)
-    			SELECT  koopmuhasebe_urun.id ,koopmuhasebe_urun.urun_adi,uretici_adi 
-                FROM UnionedTableGrouped                
-    			INNER JOIN koopmuhasebe_urun ON UnionedTableGrouped.urun_id = koopmuhasebe_urun.id
-                INNER JOIN koopmuhasebe_uretici ON koopmuhasebe_urun.uretici_id = koopmuhasebe_uretici.id
-    			WHERE miktar > 0
-    			ORDER BY koopmuhasebe_urun.urun_adi ASC
-    			"""
-	yekun = 0
-	with connection.cursor() as cursor:
-		cursor.execute(query)
-		rows = []
-		for row in cursor.fetchall():
-			rows.append([row[0], row[1], row[2], ])
-	return rows
+
 
 def urunler_ve_fiyatlari():
 	query = """    			
@@ -274,16 +277,17 @@ def urunler_ve_fiyatlari():
 					SELECT * FROM CTE
 					WHERE CTE.row_number=1
 				)
-			SELECT   koopmuhasebe_urun.id, koopmuhasebe_urun.urun_adi, koopmuhasebe_uretici.uretici_adi,  CTE_TOP.fiyat 
+			SELECT   koopmuhasebe_urun.id, koopmuhasebe_urun.urun_adi, koopmuhasebe_uretici.uretici_adi,  CTE_TOP.fiyat, auth_user.username 
 			FROM koopmuhasebe_urun
 			LEFT JOIN CTE_TOP ON CTE_TOP.urun_id = koopmuhasebe_urun.id
+			LEFT JOIN auth_user ON koopmuhasebe_urun.kullanici_id = auth_user.id
 			INNER JOIN koopmuhasebe_uretici ON koopmuhasebe_urun.uretici_id = koopmuhasebe_uretici.id			
 			"""
 	with connection.cursor() as cursor:
 		cursor.execute(query)
 		rows = []
 		for row in cursor.fetchall():
-			rows.append([row[0], row[1], row[2],row[3], ])
+			rows.append([row[0], row[1], row[2],row[3], row[4], ])
 	return rows
 
 
@@ -383,18 +387,19 @@ def stogu_azalan_urunler():
 
 def borc_alacak_dosya_bilgisi_ile():
 	query = """
-		SELECT koopmuhasebe_borcalacak.id, koopmuhasebe_borcalacak.tarih, uretici_adi, tutar, odeme_araci, borcmu_alacakmi, a.model_id
-FROM koopmuhasebe_borcalacak
-LEFT JOIN (SELECT DISTINCT(model_id) FROM koopmuhasebe_dosya WHERE model_adi = 'borc_alacak') a 
-ON koopmuhasebe_borcalacak.id = a.model_id
-INNER JOIN koopmuhasebe_uretici ON koopmuhasebe_uretici.id = koopmuhasebe_borcalacak.uretici_id
-ORDER BY koopmuhasebe_borcalacak.id DESC
+	SELECT koopmuhasebe_borcalacak.id,koopmuhasebe_borcalacak.tarih, uretici_adi, tutar, odeme_araci, borcmu_alacakmi, a.model_id,  auth_user.username
+	FROM koopmuhasebe_borcalacak
+	LEFT JOIN (SELECT DISTINCT(model_id) FROM koopmuhasebe_dosya WHERE model_adi = 'borc_alacak') a 
+	ON koopmuhasebe_borcalacak.id = a.model_id
+	INNER JOIN koopmuhasebe_uretici ON koopmuhasebe_uretici.id = koopmuhasebe_borcalacak.uretici_id
+	LEFT JOIN auth_user ON koopmuhasebe_borcalacak.kullanici_id = auth_user.id
+	ORDER BY koopmuhasebe_borcalacak.id DESC
 		"""
 	with connection.cursor() as cursor:
 		cursor.execute(query)
 		rows = []
 		for row in cursor.fetchall():
-			rows.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6],])				
+			rows.append([row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],])				
 	return rows
 
 

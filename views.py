@@ -215,7 +215,7 @@ def dashboard(request):
 
 @login_required
 def virman_liste(request):
-	virman_listesi = VirmanVeDuzeltme.objects.all().order_by('-id')
+	virman_listesi = VirmanVeDuzeltme.objects.select_related('kullanici').all().order_by('-id')
 	headers = ['Kayıt No','Tarih','Çıkış Hesabı' ,'Giriş Hesabı', 'Tutar', 'Kullanıcı',]
 	rows = []
 	for p in virman_listesi:		
@@ -248,13 +248,13 @@ def virman_edit(request,pk):
 def borc_alacak_liste(request):
 	#borc_alacak_listesi = BorcAlacak.objects.all().order_by('-id')
 	borc_alacak_listesi = borc_alacak_dosya_bilgisi_ile()
-	headers = ['Kayıt No','Tarih','Üretici' ,'Tutar', 'Ödeme Aracı' ,'Borç/Alacak','Evrak']
+	headers = ['Kayıt No','Tarih','Üretici' ,'Tutar', 'Ödeme Aracı' ,'Borç/Alacak','Evrak','Kullanıcı']
 	rows = []
 	for p in borc_alacak_listesi:
 		evrak_html = ""
 		if p[6] != None:
 			evrak_html = "<i class=\"fa fa-file-text-o fa-fw\"></i>"
-		rows.append([p[0],localtime(p[1]).strftime("%Y-%m-%d %H:%M:%S"),p[2],p[3],GetOdemeAraciEnum(p[4]),GetBorcAlacakEnum(p[5]),evrak_html,])
+		rows.append([p[0],localtime(p[1]).strftime("%Y-%m-%d %H:%M:%S"),p[2],p[3],GetOdemeAraciEnum(p[4]),GetBorcAlacakEnum(p[5]),evrak_html,p[7],])
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Borç Alacak Hareketleri',
 	'form_adresi':'borc_alacak_yeni',
@@ -328,7 +328,8 @@ def stok_girisi_yeni(request):
 	if request.method == "POST":
 		form = StokGirisiForm(request.POST)
 		if form.is_valid():
-			stokGirisObj = form.save(commit=False)			
+			stokGirisObj = form.save(commit=False)
+			stokGirisObj.kullanici = request.user			
 			stokGirisObj.save()
 			otomatikNot = str(stokGirisObj.miktar) +' adet ' +stokGirisObj.urun.urun_adi
 			urunObj = urun.objects.get(pk=stokGirisObj.urun.id)
@@ -344,11 +345,11 @@ def stok_girisi_yeni(request):
 
 @login_required
 def stok_girisi_liste(request):
-	stok_girisleri_listesi = StokGirisi.objects.all().order_by('-id')
-	headers = ['Kayıt No','Tarih','Ürün' ,'Miktar', 'Stok Hareketi Tipi',]
+	stok_girisleri_listesi = StokGirisi.objects.select_related('kullanici').select_related('urun').select_related('stok_hareketi_tipi').all().order_by('-id')
+	headers = ['Kayıt No','Tarih','Ürün' ,'Miktar', 'Stok Hareketi Tipi','Kullanıcı']
 	rows = []
 	for p in stok_girisleri_listesi:		
-		rows.append([p.id,localtime(p.tarih).strftime("%Y-%m-%d %H:%M:%S"),p.urun,p.miktar, p.stok_hareketi_tipi,])
+		rows.append([p.id,localtime(p.tarih).strftime("%Y-%m-%d %H:%M:%S"),p.urun,p.miktar, p.stok_hareketi_tipi,p.kullanici])
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Stok Girişleri',
 	'form_adresi':'stok_girisi_yeni',
@@ -366,7 +367,8 @@ def stok_girisi_edit(request,pk):
 		form = StokGirisiForm(request.POST,instance=stokGirisiObj)
 		if form.is_valid():
 			stokGirisObj = form.save(commit=False)
-			form.save()
+			stokGirisObj.kullanici = request.user
+			stokGirisObj.save()
 			tutar = request.POST['tutar']
 			if stokGirisObj.stok_hareketi_tipi_id == 1:  # demek ki stok girisi imiş, duzeltme ve fireyi kapsamiyor
 				if borcAlacakObj != None:
@@ -395,7 +397,8 @@ def gider_yeni(request):
 	if request.method == "POST":
 		form = GiderForm(request.POST)
 		if form.is_valid():
-			giderObj = form.save(commit=False)			
+			giderObj = form.save(commit=False)				
+			giderObj.kullanici = request.user			
 			giderObj.save()
 			return redirect('/koopmuhasebe/gider_liste')
 	else:
@@ -409,7 +412,8 @@ def gider_edit(request,pk):
 		form = GiderForm(request.POST,instance=giderObj)
 		if form.is_valid():
 			giderObjObj = form.save(commit=False)			
-			form.save()
+			giderObjObj.kullanici = request.user
+			giderObjObj.save()
 			return redirect('/koopmuhasebe/gider_liste',pk=giderObj.pk)
 	else:
 		form = GiderForm(instance=giderObj)
@@ -417,11 +421,11 @@ def gider_edit(request,pk):
 
 @login_required	
 def gider_liste(request):
-	gider_listesi = Gider.objects.all().order_by('-id')
-	headers = ['Kayıt No','Tarih','Gider Tipi' ,'Tutar','Ödeme Aracı',]
+	gider_listesi = Gider.objects.select_related('kullanici').select_related('gider_tipi').all().order_by('-id')
+	headers = ['Kayıt No','Tarih','Gider Tipi' ,'Tutar','Ödeme Aracı','Kullanıcı',]
 	rows = []
 	for p in gider_listesi:		
-		rows.append([p.id,localtime(p.tarih).strftime("%Y-%m-%d %H:%M:%S"),p.gider_tipi,p.tutar,GetOdemeAraciEnum(p.odeme_araci) ,])	
+		rows.append([p.id,localtime(p.tarih).strftime("%Y-%m-%d %H:%M:%S"),p.gider_tipi,p.tutar,GetOdemeAraciEnum(p.odeme_araci) , p.kullanici,])	
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Giderler',
 	'form_adresi':'gider_yeni',
@@ -494,7 +498,7 @@ def UrunFiyatVeBirimleriniGetir():
 @login_required
 def satis_liste(request):
 	a=User.get_all_permissions(request.user)
-	satis_listesi = Satis.objects.all().order_by('-id').annotate(toplamTutar=Sum('satisstokhareketleri__tutar'))[:200]
+	satis_listesi = Satis.objects.select_related('kullanici').all().order_by('-id').annotate(toplamTutar=Sum('satisstokhareketleri__tutar'))[:200]
 	headers = ['Kayıt No','Tarih','Tutar','Kullanici',]
 	rows = []
 	for p in satis_listesi:		
@@ -517,7 +521,7 @@ def urun_yeni(request):
 		form = UrunForm(request.POST)
 		if form.is_valid():
 			urunObj = form.save(commit=False)
-			#ureticiObj.kullanici = request.user
+			urunObj.kullanici = request.user
 			urunObj.save()
 			return redirect('/koopmuhasebe/urun_liste')
 	else:
@@ -527,7 +531,7 @@ def urun_yeni(request):
 @login_required
 def urun_liste(request):
 	urun_listesi = urun.objects.all()
-	headers = ['Kayıt No','Ürün','Üretici','Fiyat']
+	headers = ['Kayıt No','Ürün','Üretici','Fiyat', 'Kullanıcı']
 	rows = urunler_ve_fiyatlari()	
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Ürünler',
@@ -544,8 +548,9 @@ def urun_edit(request,pk):
 	if request.method == "POST":
 		form = UrunForm(request.POST,instance=urunObj)
 		if form.is_valid():
-			urunObj = form.save(commit=False)			
-			form.save()
+			urunObj = form.save(commit=False)
+			urunObj.kullanici = request.user			
+			urunObj.save()
 			return redirect('/koopmuhasebe/urun_liste',pk=urunObj.pk)
 	else:
 		form = UrunForm(instance=urunObj)
@@ -598,11 +603,11 @@ def kisi_liste(request):
 
 @login_required
 def kisi_odeme_tahsilat_liste(request):
-	kisi_odeme_tahsilat_listesi = KisiOdemeTahsilat.objects.all().order_by('-id')
-	headers = ['Kayıt No','Tarih','Kişi' ,'Tutar', 'Ödeme Aracı' ,'Ödeme/Tahsilat',]
+	kisi_odeme_tahsilat_listesi = KisiOdemeTahsilat.objects.select_related('kullanici').select_related('kisi').all().order_by('-id')
+	headers = ['Kayıt No','Tarih','Kişi' ,'Tutar', 'Ödeme Aracı' ,'Ödeme/Tahsilat','Kullanıcı',]
 	rows = []
 	for p in kisi_odeme_tahsilat_listesi:
-		rows.append([p.id,p.tarih,p.kisi,p.tutar, GetOdemeAraciEnum(p.odeme_araci) , GetOdemeTahsilatEnum(p.odememi_tahsilatmi),])
+		rows.append([p.id,p.tarih,p.kisi,p.tutar, GetOdemeAraciEnum(p.odeme_araci) , GetOdemeTahsilatEnum(p.odememi_tahsilatmi),p.kullanici, ])
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Ödeme Tahsilat Hareketleri',
 	'form_adresi':'kisi_odeme_tahsilat_yeni',
@@ -638,7 +643,7 @@ def kisi_odeme_tahsilat_edit(request, pk):
 		if form.is_valid():
 			kisiOdemeTahsilatObj = form.save(commit=False)
 			kisiOdemeTahsilatObj.kullanici = request.user
-			form.save()
+			kisiOdemeTahsilatObj.save()
 			return redirect('/koopmuhasebe/kisi_odeme_tahsilat_liste')
 	else:
 		form = KisiOdemeTahsilatForm(instance=kisiOdemeTahsilatObj)
@@ -678,11 +683,11 @@ def form_uretici_edit(request,pk):
 
 @login_required
 def liste_uretici(request):
-	uretici_listesi = uretici.objects.all()
-	headers = ['Kayıt No','Üretici Adı','Adres']
+	uretici_listesi = uretici.objects.select_related('kullanici').all()
+	headers = ['Kayıt No','Üretici Adı','Adres','Kullanıcı']
 	rows = []
 	for p in uretici_listesi:		
-		rows.append([p.id,p.uretici_adi,p.adres])	
+		rows.append([p.id,p.uretici_adi,p.adres, p.kullanici])	
 	context = {'rows': rows, 'headers': headers,
 	'form_adresi':'form_uretici_yeni',
 	'title_of_list':'Üreticiler',
