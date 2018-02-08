@@ -650,7 +650,7 @@ def kisi_odeme_tahsilat_edit(request, pk):
 
 	return render(request, 'koopmuhasebe/domain/main-body-form-kisi-odeme-tahsilat.html', {'form': form, })  
 
-###ÜRETİCİ
+###ÜRETİCİ --test
 @login_required
 @permission_required("koopmuhasebe.change_uretici")
 def form_uretici_yeni(request): 		
