@@ -331,11 +331,13 @@ def stok_girisi_yeni(request):
 			stokGirisObj = form.save(commit=False)
 			stokGirisObj.kullanici = request.user			
 			stokGirisObj.save()
+			'''
 			otomatikNot = str(stokGirisObj.miktar) +' adet ' +stokGirisObj.urun.urun_adi
 			urunObj = urun.objects.get(pk=stokGirisObj.urun.id)
 			tutar = request.POST['tutar']
 			if stokGirisObj.stok_hareketi_tipi_id == 1: # demek ki stok girisi imiş, duzeltme ve fireyi kapsamiyor
 				borcAlacak = BorcAlacak.objects.create(uretici=urunObj.uretici, tarih = stokGirisObj.tarih, tutar = tutar, borcmu_alacakmi = 1, notlar =  otomatikNot ,kullanici= request.user, dis_sistem_tipi=1, dis_sistem_id = stokGirisObj.id)
+			'''
 			return redirect('/koopmuhasebe/stok_girisi_liste')
 	else:
 		form = StokGirisiForm()
@@ -369,6 +371,7 @@ def stok_girisi_edit(request,pk):
 			stokGirisObj = form.save(commit=False)
 			stokGirisObj.kullanici = request.user
 			stokGirisObj.save()
+			'''
 			tutar = request.POST['tutar']
 			if stokGirisObj.stok_hareketi_tipi_id == 1:  # demek ki stok girisi imiş, duzeltme ve fireyi kapsamiyor
 				if borcAlacakObj != None:
@@ -381,6 +384,7 @@ def stok_girisi_edit(request,pk):
 					borcAlacak = BorcAlacak.objects.create(uretici=urunObj.uretici, tarih=stokGirisObj.tarih, tutar=tutar,
 														   borcmu_alacakmi=1, notlar=otomatikNot, kullanici=request.user,
 														   dis_sistem_tipi=1, dis_sistem_id=stokGirisObj.id)
+			'''
 			return redirect('/koopmuhasebe/stok_girisi_liste',pk=stokGirisiObj.pk)
 	else:
 		form = StokGirisiForm(instance=stokGirisiObj)

@@ -30,10 +30,10 @@ class StokGirisiForm(forms.ModelForm):
 	tarih = forms.DateTimeField(initial=datetime.now)		
 	notlar = forms.CharField( widget=forms.Textarea, required=False )
 	urun = forms.ModelChoiceField(queryset=urun.objects.order_by('urun_adi'), required=True)	
-	agirlik = forms.DecimalField(required=False)
+	#agirlik = forms.DecimalField(required=False)
 	class Meta:
 		model = StokGirisi
-		fields = ('tarih', 'urun','miktar','notlar','agirlik','stok_hareketi_tipi')
+		fields = ('tarih', 'urun','miktar','notlar','stok_hareketi_tipi')
 
 
 		

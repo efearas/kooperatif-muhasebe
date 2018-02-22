@@ -43,17 +43,7 @@
 	{{form.miktar|addclass:'form-control miktar_kutusu' }}
 	<span id="birim_span" class="input-group-addon"> Adet </span>
 </div>
-<label>Toplam Ürün Tutarı (bu stok girişi için üreticiye borçlandığımız tutar)</label>
-<div class="form-group input-group">
-	<input type="number" name="tutar" required="" class="form-control tutar_kutusu" id="id_tutar" step="any" value={{tutar}}>
-	<span id="birim_span" class="input-group-addon"> TL </span>
-</div>
 
-<label>Ağırlık</label>
-<div class="form-group input-group">	
-	{{form.agirlik|addclass:'form-control' }}
-	<span id="birim_span" class="input-group-addon"> KG </span>
-</div>
 <div class="form-group">
 	<label>Notlar</label>
 	{{form.notlar|addclass:'form-control'}}
