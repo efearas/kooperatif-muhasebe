@@ -277,7 +277,7 @@ def urunler_ve_fiyatlari():
 					SELECT * FROM CTE
 					WHERE CTE.row_number=1
 				)
-			SELECT   koopmuhasebe_urun.id, koopmuhasebe_urun.urun_adi, koopmuhasebe_uretici.uretici_adi,  CTE_TOP.fiyat, auth_user.username 
+			SELECT   koopmuhasebe_urun.id, koopmuhasebe_urun.urun_adi, koopmuhasebe_uretici.uretici_adi,  CTE_TOP.fiyat, auth_user.username, koopmuhasebe_urun.kdv_orani 
 			FROM koopmuhasebe_urun
 			LEFT JOIN CTE_TOP ON CTE_TOP.urun_id = koopmuhasebe_urun.id
 			LEFT JOIN auth_user ON koopmuhasebe_urun.kullanici_id = auth_user.id
@@ -287,7 +287,7 @@ def urunler_ve_fiyatlari():
 		cursor.execute(query)
 		rows = []
 		for row in cursor.fetchall():
-			rows.append([row[0], row[1], row[2],row[3], row[4], ])
+			rows.append([row[0], row[1], row[2],row[3], row[5], row[4], ])
 	return rows
 
 
