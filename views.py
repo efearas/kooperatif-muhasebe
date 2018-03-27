@@ -534,7 +534,7 @@ def urun_yeni(request):
 @login_required
 def urun_liste(request):
 	urun_listesi = urun.objects.all()
-	headers = ['Kayıt No','Ürün','Üretici','Fiyat', 'KDV Oranı', 'Kullanıcı',]
+	headers = ['Kayıt No','Ürün','Üretici','Fiyat', 'KDV Kategorisi', 'Kullanıcı',]
 	rows = urunler_ve_fiyatlari()	
 	context = {'rows': rows, 'headers': headers,
 	'title_of_list':'Ürünler',
