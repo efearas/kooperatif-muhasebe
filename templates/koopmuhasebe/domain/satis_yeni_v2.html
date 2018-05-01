@@ -34,6 +34,7 @@
 			<th>Birim Fiyat</th>
 			<th>Miktar</th>
 			<th>Tutar</th>
+			<th></th>
 		</tr>
 
 {{ form2.management_form }}
@@ -65,6 +66,9 @@
         {{f.tutar|addclass:'form-control input-md tutar_kutusu'}}
 		{{f.tutar.errors.as_text}}
 	</td> 
+	<td>
+		<a href="#" onclick="TableDeleteRow(this)">sil</a>
+	</td>
             
     {% for field in f %}
 		{% if field.is_hidden %}                                     
@@ -120,6 +124,12 @@
 	var arr = [{{urun_fiyat|safe|escape}}];
 	dicGuncelFiyatlar = {};
 
+	function TableDeleteRow(lnk)
+	{
+		var row = lnk.parentNode.parentNode;
+  		row.parentNode.removeChild(row);
+		reCalculate();
+	}
 
 	$(document).ready(function(){
 	

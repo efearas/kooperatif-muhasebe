@@ -33,6 +33,7 @@
 			<th>Birim Fiyat</th>
 			<th>Miktar</th>
 			<th>Tutar</th>
+			<th></th>
 		</tr>
 
 {{ form2.management_form }}
@@ -60,7 +61,9 @@
         {{f.tutar|addclass:'form-control input-md tutar_kutusu'}}
 		{{f.tutar.errors.as_text}}
 	</td> 
-            
+    <td>
+		<a href="#" onclick="TableDeleteRow(this,{{ forloop.counter0 }})">sil</a>
+	</td>        
     {% for field in f %}
 		{% if field.is_hidden %}                                     
 			{{ field}}
@@ -114,6 +117,17 @@
 	
 	var arr = [{{urun_fiyat|safe|escape}}];
 	dicGuncelFiyatlar = {};
+
+	function TableDeleteRow(lnk, rowIndex)
+	{
+		var row = lnk.parentNode.parentNode;
+  		//row.parentNode.removeChild(row);//django problem cikariyor
+		//satisstokhareketleri_set-0-tutar
+		document.getElementById('id_satisstokhareketleri_set-'+ rowIndex +'-miktar').value=0;
+		document.getElementById('id_satisstokhareketleri_set-'+ rowIndex +'-tutar').value=0;
+		row.style.display = 'none';
+		reCalculate();
+	}
 
 	$(document).ready(function(){
 	
