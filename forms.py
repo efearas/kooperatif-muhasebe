@@ -49,10 +49,12 @@ class KisiForm(forms.ModelForm):
 
 
 class SatisForm(forms.ModelForm):	
-	tarih = forms.DateTimeField(initial=datetime.now)	
+	tarih = forms.DateTimeField(initial=datetime.now)
+	ortaga_satis_mi = forms.BooleanField(required = False)	
 	class Meta:
 		model = Satis		
-		exclude = {'kullanici'}
+		fields = {'tarih', 'ortaga_satis_mi'}
+		#exclude = {'kullanici'}
 
 class BorcAlacakForm(forms.ModelForm):
 	tarih = forms.DateTimeField(initial=datetime.now)

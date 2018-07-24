@@ -2,6 +2,8 @@
 from django.db import connection
 import pdb
 import datetime
+import random
+import calendar
 
 
 def rapor_aylik_urun_satis():
@@ -442,4 +444,92 @@ def rapor_uretici_borclari():
 		rows = []
 		for row in cursor.fetchall():
 			rows.append([row[0], row[1], ])
+	return rows
+
+
+def random_kisi_getir():
+	query = """
+				SELECT  koopmuhasebe_kisi.id 
+				FROM koopmuhasebe_kisi                
+				"""
+	#query = query.format(table_stok_durumu = table_stok_durumu())
+	
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = []
+		for row in cursor.fetchall():
+			rows.append([row[0], ])	
+		random_id =  rows[random.randint(0,len(rows)-1)][0]
+	return random_id
+
+def rapor_faturalar_kisiler(_yil, _ay):
+	_last_day_of_month = calendar.monthrange(int(_yil),int(_ay))[1]
+	query = """
+				SELECT koopmuhasebe_kisi.id ,koopmuhasebe_kisi.kisi_adi 
+				FROM koopmuhasebe_kisi
+				INNER JOIN koopmuhasebe_satis
+				ON koopmuhasebe_kisi.id = koopmuhasebe_satis.kisi_id
+				WHERE koopmuhasebe_satis.tarih BETWEEN '{yil}-{ay}-01 00:00:00' AND '{yil}-{ay}-{last_day_of_month} 23:59:59'  
+				"""
+	# 
+	query = query.format(yil = _yil, ay = _ay,last_day_of_month =str( _last_day_of_month)  )
+	
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = []
+		for row in cursor.fetchall():
+			yil_ay_id = str(_yil) +  '-' + str(_ay) +'-' + str(row[0])
+			rows.append([ yil_ay_id,row[1], ])
+	return rows
+
+def rapor_faturalar_kisi_fatura_detayi(_yil, _ay, _kisiID):
+	_last_day_of_month = calendar.monthrange(int(_yil),int(_ay))[1]
+	query = """
+				WITH
+	UrunNihaiFiyat AS(
+    		SELECT urun_id, zaman,fiyat,
+			ROW_NUMBER() OVER (PARTITION BY urun_id ORDER BY zaman DESC)
+						FROM koopmuhasebe_urun_fiyat
+						
+					
+    ),
+	
+    UrunFiyat AS(
+       SELECT   koopmuhasebe_urun.id AS urunIDsi, UrunNihaiFiyat.fiyat AS urunFiyati, koopmuhasebe_urun.urun_adi,koopmuhasebe_kdvkategorisi.kdv_orani
+        		from koopmuhasebe_urun
+				INNER JOIN UrunNihaiFiyat 
+				ON UrunNihaiFiyat.urun_id = koopmuhasebe_urun.id
+        		LEFT OUTER JOIN koopmuhasebe_kdvkategorisi
+        		ON koopmuhasebe_kdvkategorisi.id = koopmuhasebe_urun.kdv_kategorisi_id
+				WHERE UrunNihaiFiyat.row_number =1
+	),
+	
+    BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar AS(
+    	SELECT  urun_id, sum(miktar) as countOfSales
+		FROM koopmuhasebe_satis        		
+        INNER JOIN  koopmuhasebe_satisstokhareketleri
+        ON koopmuhasebe_satisstokhareketleri.satis_id = koopmuhasebe_satis.id
+        WHERE koopmuhasebe_satis.tarih BETWEEN '{yil}-{ay}-01 00:00:00' AND '{yil}-{ay}-{last_day_of_month} 23:59:59' 
+		AND kisi_id = {kisi_id}
+        GROUP BY urun_id
+        
+    )
+    
+    SELECT BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.countOfSales, UrunFiyat.urunFiyati, UrunFiyat.urun_adi, UrunFiyat.kdv_orani
+    ,(BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.countOfSales*UrunFiyat.urunFiyati) AS toplam_tutar
+    FROM BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar
+    INNER JOIN UrunFiyat
+    ON BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.urun_id = UrunFiyat.urunIDsi  
+				"""
+	# 
+	query = query.format(yil = _yil, ay = _ay,last_day_of_month =str( _last_day_of_month), kisi_id = _kisiID  )
+	
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = []
+		for row in cursor.fetchall():
+			kdv_orani = ' %' + str(row[3])
+			aciklama = row[2] + ' ' + kdv_orani
+			adet = str(row[0]) + ' adet'
+			rows.append([aciklama, adet, row[1], row[4],  ])
 	return rows

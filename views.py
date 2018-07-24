@@ -10,7 +10,7 @@ from .models import *
 #from .forms import UreticiForm,UrunForm, SatisForm, SatisStokHareketleriForm, GiderForm, StokGirisiForm, VirmanForm, RaporTarihForm, BorcAlacakForm
 from .forms import *
 from django.contrib.auth.decorators import login_required
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.forms.models import inlineformset_factory
 from django.db.models import Sum
 from django.contrib.auth.decorators import permission_required
@@ -158,6 +158,57 @@ def rapor_satis_haftalik(request,pk):
 	'yekun' : tuple[1],	
 	}
 	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
+
+@login_required
+def rapor_ortaklara_aylik_ilk_sayfa(request):
+	headers = ['Yıl Ay', ]
+	dt_bugun = datetime.datetime.now()
+	dt_bu_ay = dt_bugun.month
+	dt_bu_yil = dt_bugun.year
+	list_aylar = []
+	for x in range(0, 23):
+		dt_bu_ay = dt_bu_ay -1
+		if dt_bu_ay == 0:
+			dt_bu_ay = 12
+			dt_bu_yil = dt_bu_yil -1
+		yil_ay = str(dt_bu_yil) + '-' + str(dt_bu_ay)
+		list_aylar.append([yil_ay])
+
+		
+	context = {
+	'rows': list_aylar,
+	'headers': headers,
+	'title_of_list':'Aylar',
+	'edit_adresi':'rapor_ortaklara_aylik_kisiler/',
+	}
+	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
+
+def rapor_ortaklara_aylik_kisiler(request,pk):
+	list_yil_ay =  pk.split('-')
+	list_kisiler = rapor_faturalar_kisiler(list_yil_ay[0], list_yil_ay[1])
+	headers = ['Kisi ID', 'Kisi Adi' ]
+	context = {
+	'rows': list_kisiler,
+	'headers': headers,
+	'title_of_list':'Kişiler',
+	'edit_adresi':'rapor_ortaklara_aylik_kisi_fatura_detayi/',
+	}
+	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
+
+def rapor_ortaklara_aylik_kisi_fatura_detayi(request,pk):
+	list_yil_ay_id =  pk.split('-')
+	list_fatura_detaylari = rapor_faturalar_kisi_fatura_detayi(list_yil_ay_id[0], list_yil_ay_id[1], list_yil_ay_id[2])
+	headers = ['Açıklama', 'Miktar', 'Birim Fiyat', 'Tutar' ]
+	context = {
+	'rows': list_fatura_detaylari,
+	'headers': headers,
+	'title_of_list':'Fatura Detayları',
+	'edit_adresi':'rapor_ortaklara_aylik_kisi_fatura_detayi/',
+	'links':False,
+	}
+	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
+
+
 
 @login_required
 def rapor_ciro(request):
@@ -450,11 +501,17 @@ def satis_view(request, pk = None):
 	satisStokHareketleriFormSet = inlineformset_factory(Satis, SatisStokHareketleri, form=SatisStokHareketleriForm, fields=('urun','miktar','tutar'), extra = 6)	
 	
 	if request.method == "POST":		
-		satisForm = SatisForm(request.POST, instance = satis)		
+		satisForm = SatisForm(request.POST, instance = satis)	
+		ortak_checked = request.POST.get('ortaga_satis_mi', '') == 'on'	
 		satisHareketleri = satisStokHareketleriFormSet(request.POST, instance = satis)		
 		if satisForm.is_valid() and satisHareketleri.is_valid():			
 			satis = satisForm.save(commit=False)
 			satis.kullanici = request.user
+			ortak = None
+			if ortak_checked:
+				ortak_id = random_kisi_getir()
+				ortak = get_object_or_404(kisi, pk=ortak_id)
+			satis.kisi = ortak			
 			satis.save()			
 			objeler2 = satisHareketleri.save(commit=False)			
 			for obje in objeler2:
@@ -467,7 +524,10 @@ def satis_view(request, pk = None):
 			return redirect('/koopmuhasebe/satis_liste')
 	else:
 		if pk != None:
-			satisForm = SatisForm(instance=satis)
+			ortaga_satis = False
+			if satis.kisi != None:
+				ortaga_satis = True
+			satisForm = SatisForm(instance=satis,initial={'ortaga_satis_mi':ortaga_satis})
 			satisHareketleri = satisStokHareketleriFormSet(instance=satis)
 		else:
 			satisForm = SatisForm()

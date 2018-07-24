@@ -62,8 +62,13 @@ urlpatterns = [
 	url(r'kisi_odeme_tahsilat_yeni', views.kisi_odeme_tahsilat_yeni, name='kisi_odeme_tahsilat_yeni'),
 	url(r'kisi_odeme_tahsilat/edit/(?P<pk>\d+)$', views.kisi_odeme_tahsilat_edit, name='kisi_odeme_tahsilat_edit'),		
 
+	
 	url(r'rapor_kasa_hareketleri', views.rapor_kasa_hareketleri, name='rapor_kasa_hareketleri'),		
 	url(r'rapor_banka_hareketleri', views.rapor_banka_hareketleri, name='rapor_banka_hareketleri'),		
+
+	url(r'rapor_ortaklara_aylik_ilk_sayfa', views.rapor_ortaklara_aylik_ilk_sayfa, name='rapor_ortaklara_aylik_ilk_sayfa'),
+	url(r'rapor_ortaklara_aylik_kisiler/(?P<pk>[\w\-]+)$', views.rapor_ortaklara_aylik_kisiler, name='rapor_ortaklara_aylik_kisiler'),
+	url(r'rapor_ortaklara_aylik_kisi_fatura_detayi/(?P<pk>[\w\-]+)$', views.rapor_ortaklara_aylik_kisi_fatura_detayi, name='rapor_ortaklara_aylik_kisi_fatura_detayi'),
 
 
 ]

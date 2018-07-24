@@ -41,7 +41,13 @@
 										{% for row in rows %}	
 											<tr class="odd gradeX">
 												{% for column in row %}	
-													<td><a href="{{edit_adresi}}{{row.0}}">{{column}}</a></td>													                  
+													<td>
+                                                            {% if links != False %}
+                                                            <a href="{{edit_adresi}}{{row.0}}">
+                                                            {% endif %}
+                                                        {{column}}
+                                                        </a>
+                                                    </td>													                  
 												{% endfor %}
 											</tr>									
 										{% endfor %}

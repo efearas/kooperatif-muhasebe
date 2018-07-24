@@ -165,6 +165,7 @@ class StokGirisi(models.Model):
 class Satis(models.Model):
 	tarih = models.DateTimeField()
 	kullanici = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+	kisi = models.ForeignKey(kisi, on_delete=models.DO_NOTHING, null=True)
 	def __str__(self):
 		return str(self.tarih)
 
