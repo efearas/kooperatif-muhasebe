@@ -83,9 +83,25 @@ def rapor_stok_durumu():
 	query = """
 			WITH
 			{table_stok_durumu}
-			SELECT  koopmuhasebe_urun.id ,koopmuhasebe_urun.urun_adi, table_stok_durumu.miktar,koopmuhasebe_urun.musteri_fiyati, (table_stok_durumu.miktar * koopmuhasebe_urun.musteri_fiyati) as urunToplamDegeri FROM table_stok_durumu
-			INNER JOIN koopmuhasebe_urun
-			ON table_stok_durumu.urun_id = koopmuhasebe_urun.id
+			,
+			CTE_FIYAT_1 AS 
+			(
+				SELECT urun_id, 
+						zaman,
+						fiyat,
+						ROW_NUMBER() OVER (PARTITION BY urun_id ORDER BY zaman DESC)
+				FROM koopmuhasebe_urun_fiyat					
+			),
+			
+			CTE_FIYAT_FINAL AS
+			(
+				SELECT * FROM CTE_FIYAT_1
+				WHERE CTE_FIYAT_1.row_number=1
+			)
+
+			SELECT  koopmuhasebe_urun.id ,koopmuhasebe_urun.urun_adi, table_stok_durumu.miktar, CTE_FIYAT_FINAL.fiyat , (table_stok_durumu.miktar * CTE_FIYAT_FINAL.fiyat) as urunToplamDegeri FROM table_stok_durumu
+			INNER JOIN koopmuhasebe_urun ON table_stok_durumu.urun_id = koopmuhasebe_urun.id
+			INNER JOIN CTE_FIYAT_FINAL ON CTE_FIYAT_FINAL.urun_id = koopmuhasebe_urun.id
 			ORDER BY table_stok_durumu.miktar ASC
 			"""
 	query = query.format(table_stok_durumu = table_stok_durumu())
@@ -470,6 +486,7 @@ def rapor_faturalar_kisiler(_yil, _ay):
 				INNER JOIN koopmuhasebe_satis
 				ON koopmuhasebe_kisi.id = koopmuhasebe_satis.kisi_id
 				WHERE koopmuhasebe_satis.tarih BETWEEN '{yil}-{ay}-01 00:00:00' AND '{yil}-{ay}-{last_day_of_month} 23:59:59'  
+				GROUP BY koopmuhasebe_kisi.id ,koopmuhasebe_kisi.kisi_adi
 				"""
 	# 
 	query = query.format(yil = _yil, ay = _ay,last_day_of_month =str( _last_day_of_month)  )
