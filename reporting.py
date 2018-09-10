@@ -532,8 +532,8 @@ def rapor_faturalar_kisi_fatura_detayi(_yil, _ay, _kisiID):
         
     )
     
-    SELECT BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.countOfSales, UrunFiyat.urunFiyati, UrunFiyat.urun_adi, UrunFiyat.kdv_orani
-    ,(BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.countOfSales*UrunFiyat.urunFiyati) AS toplam_tutar
+    SELECT BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.countOfSales, round(UrunFiyat.urunFiyati/(1+(UrunFiyat.kdv_orani::float/100))::numeric,2)  , UrunFiyat.urun_adi, UrunFiyat.kdv_orani
+    ,(BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.countOfSales* round(UrunFiyat.urunFiyati/(1+(UrunFiyat.kdv_orani::float/100))::numeric,2)) AS toplam_tutar
     FROM BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar
     INNER JOIN UrunFiyat
     ON BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.urun_id = UrunFiyat.urunIDsi  
