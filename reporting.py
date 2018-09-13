@@ -532,8 +532,12 @@ def rapor_faturalar_kisi_fatura_detayi(_yil, _ay, _kisiID):
         
     )
     
-    SELECT BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.countOfSales, round(UrunFiyat.urunFiyati/(1+(UrunFiyat.kdv_orani::float/100))::numeric,2)  , UrunFiyat.urun_adi, UrunFiyat.kdv_orani
-    ,(BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.countOfSales* round(UrunFiyat.urunFiyati/(1+(UrunFiyat.kdv_orani::float/100))::numeric,2)) AS toplam_tutar
+    SELECT BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.countOfSales, 
+	round(UrunFiyat.urunFiyati/(1+(UrunFiyat.kdv_orani::float/100))::numeric,2)  , 
+	UrunFiyat.urun_adi, 
+	UrunFiyat.kdv_orani,
+	(BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.countOfSales* round(UrunFiyat.urunFiyati/(1+(UrunFiyat.kdv_orani::float/100))::numeric,2)) AS toplam_tutar,
+	UrunFiyat.urunFiyati
     FROM BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar
     INNER JOIN UrunFiyat
     ON BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.urun_id = UrunFiyat.urunIDsi  
@@ -544,9 +548,23 @@ def rapor_faturalar_kisi_fatura_detayi(_yil, _ay, _kisiID):
 	with connection.cursor() as cursor:
 		cursor.execute(query)
 		rows = []
+		toplam_kdvsiz=0
+		toplam_kdv_1=0
+		toplam_kdv_8=0
+		toplam_kdv_18=0
+		toplam_genel=0
 		for row in cursor.fetchall():
 			kdv_orani = ' %' + str(row[3])
+			toplam_kdvsiz = toplam_kdvsiz +  row[1]*row[0]
+			toplam_genel = toplam_genel + row[5]*row[0]
+			if row[3] == 1:
+				toplam_kdv_1 = toplam_kdv_1 + (row[5]-row[1])*row[0]
+			if row[3] == 8:
+				toplam_kdv_8 = toplam_kdv_8 +  (row[5]-row[1])*row[0]
+			if row[3] == 18:
+				toplam_kdv_18 = toplam_kdv_18 +  (row[5]-row[1])*row[0]
 			aciklama = row[2] + ' ' + kdv_orani
 			adet = str(row[0]) + ' adet'
 			rows.append([aciklama, adet, row[1], row[4],  ])
-	return rows
+		aTuple=(rows,toplam_kdvsiz, toplam_kdv_1,toplam_kdv_8,toplam_kdv_18, toplam_genel)
+	return aTuple

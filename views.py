@@ -197,16 +197,21 @@ def rapor_ortaklara_aylik_kisiler(request,pk):
 
 def rapor_ortaklara_aylik_kisi_fatura_detayi(request,pk):
 	list_yil_ay_id =  pk.split('-')
-	list_fatura_detaylari = rapor_faturalar_kisi_fatura_detayi(list_yil_ay_id[0], list_yil_ay_id[1], list_yil_ay_id[2])
+	tuple_fatura_detaylari = rapor_faturalar_kisi_fatura_detayi(list_yil_ay_id[0], list_yil_ay_id[1], list_yil_ay_id[2])
 	headers = ['Açıklama', 'Miktar', 'Birim Fiyat', 'Tutar' ]
 	context = {
-	'rows': list_fatura_detaylari,
+	'rows': tuple_fatura_detaylari[0],
 	'headers': headers,
 	'title_of_list':'Fatura Detayları',
 	'edit_adresi':'rapor_ortaklara_aylik_kisi_fatura_detayi/',
 	'links':False,
+	'toplam_kdvsiz':tuple_fatura_detaylari[1],
+	'toplam_kdv_1':tuple_fatura_detaylari[2],
+	'toplam_kdv_8':tuple_fatura_detaylari[3],
+	'toplam_kdv_18':tuple_fatura_detaylari[4],
+	'toplam_genel':tuple_fatura_detaylari[5],	
 	}
-	return render(request, 'koopmuhasebe/main-body-rapor.html',context)
+	return render(request, 'koopmuhasebe/main-body-rapor-fatura.html',context)
 
 
 
