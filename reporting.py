@@ -475,7 +475,6 @@ def random_kisi_getir():
 			if row[0] not in [2,3,12,]:
 				rows.append([row[0], ])
 	random_id =  rows[random.randint(0,len(rows)-1)][0]
-	pdb.set_trace()
 	return random_id
 
 def rapor_faturalar_kisiler(_yil, _ay):
