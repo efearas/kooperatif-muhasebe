@@ -494,11 +494,11 @@ def rapor_faturalar_kisiler(_yil, _ay):
 		cursor.execute(query)
 		rows = []
 		for row in cursor.fetchall():
-			yil_ay_id = str(_yil) +  '-' + str(_ay) +'-' + str(row[0])
+			yil_ay_id = str(_yil) +  '-' + str(_ay) +'-' + str(row[0]) + '-1' #sondaki 1 pagination icin
 			rows.append([ yil_ay_id,row[1], ])
 	return rows
 
-def rapor_faturalar_kisi_fatura_detayi(_yil, _ay, _kisiID):
+def rapor_faturalar_kisi_fatura_detayi_eski(_yil, _ay, _kisiID):
 	_last_day_of_month = calendar.monthrange(int(_yil),int(_ay))[1]
 	query = """
 				WITH
@@ -543,6 +543,80 @@ def rapor_faturalar_kisi_fatura_detayi(_yil, _ay, _kisiID):
 				"""
 	# 
 	query = query.format(yil = _yil, ay = _ay,last_day_of_month =str( _last_day_of_month), kisi_id = _kisiID  )
+	
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		rows = []
+		toplam_kdvsiz=0
+		toplam_kdv_1=0
+		toplam_kdv_8=0
+		toplam_kdv_18=0
+		toplam_genel=0
+		for row in cursor.fetchall():
+			kdv_orani = ' %' + str(row[3])
+			toplam_kdvsiz = toplam_kdvsiz +  row[1]*row[0]
+			toplam_genel = toplam_genel + row[5]*row[0]
+			if row[3] == 1:
+				toplam_kdv_1 = toplam_kdv_1 + (row[5]-row[1])*row[0]
+			if row[3] == 8:
+				toplam_kdv_8 = toplam_kdv_8 +  (row[5]-row[1])*row[0]
+			if row[3] == 18:
+				toplam_kdv_18 = toplam_kdv_18 +  (row[5]-row[1])*row[0]
+			aciklama = row[2] + ' ' + kdv_orani
+			adet = str(row[0]) + ' adet'
+			rows.append([aciklama, adet, row[1], row[4],  ])
+		aTuple=(rows,toplam_kdvsiz, toplam_kdv_1,toplam_kdv_8,toplam_kdv_18, toplam_genel)
+	return aTuple
+
+def rapor_faturalar_kisi_fatura_detayi_yeni(_yil, _ay, _kisiID, page):
+	_last_day_of_month = calendar.monthrange(int(_yil),int(_ay))[1]
+	query = """
+				WITH
+	UrunNihaiFiyat AS(
+    		SELECT urun_id, zaman,fiyat,
+			ROW_NUMBER() OVER (PARTITION BY urun_id ORDER BY zaman DESC)
+						FROM koopmuhasebe_urun_fiyat
+						
+					
+    ),
+	
+    UrunFiyat AS(
+       SELECT   koopmuhasebe_urun.id AS urunIDsi, UrunNihaiFiyat.fiyat AS urunFiyati, koopmuhasebe_urun.urun_adi,koopmuhasebe_kdvkategorisi.kdv_orani
+        		from koopmuhasebe_urun
+				INNER JOIN UrunNihaiFiyat 
+				ON UrunNihaiFiyat.urun_id = koopmuhasebe_urun.id
+        		LEFT OUTER JOIN koopmuhasebe_kdvkategorisi
+        		ON koopmuhasebe_kdvkategorisi.id = koopmuhasebe_urun.kdv_kategorisi_id
+				WHERE UrunNihaiFiyat.row_number =1
+	),
+	
+    BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar AS(
+    	SELECT  urun_id, sum(miktar) as countOfSales
+		FROM koopmuhasebe_satis        		
+        INNER JOIN  koopmuhasebe_satisstokhareketleri
+        ON koopmuhasebe_satisstokhareketleri.satis_id = koopmuhasebe_satis.id
+        WHERE koopmuhasebe_satis.tarih BETWEEN '{yil}-{ay}-01 00:00:00' AND '{yil}-{ay}-{last_day_of_month} 23:59:59' 
+		AND kisi_id = {kisi_id}
+        GROUP BY urun_id
+        
+    )
+    
+    SELECT BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.countOfSales, 
+	round(UrunFiyat.urunFiyati/(1+(UrunFiyat.kdv_orani::float/100))::numeric,2)  , 
+	UrunFiyat.urun_adi, 
+	UrunFiyat.kdv_orani,
+	(BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.countOfSales* round(UrunFiyat.urunFiyati/(1+(UrunFiyat.kdv_orani::float/100))::numeric,2)) AS toplam_tutar,
+	UrunFiyat.urunFiyati
+    FROM BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar
+    INNER JOIN UrunFiyat
+    ON BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.urun_id = UrunFiyat.urunIDsi
+	ORDER BY urun_id
+	OFFSET {offset}
+	LIMIT {limit}  
+				"""
+	# 
+	page_size=15
+	query = query.format(yil = _yil, ay = _ay,last_day_of_month =str( _last_day_of_month), kisi_id = _kisiID, offset =  (int(page)-1)*page_size, limit = page_size)
 	
 	with connection.cursor() as cursor:
 		cursor.execute(query)

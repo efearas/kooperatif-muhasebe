@@ -214,6 +214,8 @@
 		});
 	}
 
+	var global_total; //sayfayi terk ederken kullanmak icin
+	var global_submitting=false;
 
 	function TotalHesapla()
 	{
@@ -225,6 +227,7 @@
 				runningTotal = runningTotal + parseFloat(tutar);
 		}
 		$("#total").val(runningTotal);
+		global_total = runningTotal
 		return;
 	}
 
@@ -311,7 +314,20 @@
 	editEkranindaSayfaLoadOlurkenBirimFiyatlariGetir();
 	reCalculate();
 	document.getElementById("id_satisstokhareketleri_set-0-urun").focus();
-	
+	$('form#the_form').submit(function() {
+   		$(window).unbind('beforeunload');
+	});
+
+	$(window).bind('beforeunload', function(){
+		if(global_total != 0)
+		{
+			  return 'Are you sure you want to leave?';
+		}
+		else
+		{
+			return;
+		}
+	});
 	
 </script>
 
