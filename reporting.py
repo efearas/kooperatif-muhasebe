@@ -615,7 +615,7 @@ def rapor_faturalar_kisi_fatura_detayi_yeni(_yil, _ay, _kisiID, page):
 	LIMIT {limit}  
 				"""
 	# 
-	page_size=15
+	page_size=18
 	query = query.format(yil = _yil, ay = _ay,last_day_of_month =str( _last_day_of_month), kisi_id = _kisiID, offset =  (int(page)-1)*page_size, limit = page_size)
 	
 	with connection.cursor() as cursor:
@@ -631,13 +631,20 @@ def rapor_faturalar_kisi_fatura_detayi_yeni(_yil, _ay, _kisiID, page):
 			toplam_kdvsiz = toplam_kdvsiz +  row[1]*row[0]
 			toplam_genel = toplam_genel + row[5]*row[0]
 			if row[3] == 1:
-				toplam_kdv_1 = toplam_kdv_1 + (row[5]-row[1])*row[0]
+				toplam_kdv_1 =  toplam_kdv_1 + row[1]*row[0]
+				#toplam_kdv_1 = toplam_kdv_1 + (row[5]-row[1])*row[0]
 			if row[3] == 8:
-				toplam_kdv_8 = toplam_kdv_8 +  (row[5]-row[1])*row[0]
+				toplam_kdv_8 =  toplam_kdv_8 + row[1]*row[0]
+				#toplam_kdv_8 = toplam_kdv_8 +  (row[5]-row[1])*row[0]
 			if row[3] == 18:
-				toplam_kdv_18 = toplam_kdv_18 +  (row[5]-row[1])*row[0]
+				toplam_kdv_18 =  toplam_kdv_18 + row[1]*row[0]
+				#toplam_kdv_18 = toplam_kdv_18 +  (row[5]-row[1])*row[0]
 			aciklama = row[2] + ' ' + kdv_orani
 			adet = str(row[0]) + ' adet'
 			rows.append([aciklama, adet, row[1], row[4],  ])
+		toplam_kdv_1 = toplam_kdv_1 / 100
+		toplam_kdv_8 = toplam_kdv_8 / 100 * 8
+		toplam_kdv_18 = toplam_kdv_18 / 100 * 18
+
 		aTuple=(rows,toplam_kdvsiz, toplam_kdv_1,toplam_kdv_8,toplam_kdv_18, toplam_genel)
 	return aTuple
