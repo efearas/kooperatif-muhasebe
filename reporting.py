@@ -642,9 +642,10 @@ def rapor_faturalar_kisi_fatura_detayi_yeni(_yil, _ay, _kisiID, page):
 			aciklama = row[2] + ' ' + kdv_orani
 			adet = str(row[0]) + ' adet'
 			rows.append([aciklama, adet, row[1], row[4],  ])
-		toplam_kdv_1 = toplam_kdv_1 / 100
-		toplam_kdv_8 = toplam_kdv_8 / 100 * 8
-		toplam_kdv_18 = toplam_kdv_18 / 100 * 18
+		toplam_kdv_1 =  float("{0:.2f}".format(toplam_kdv_1 / 100)) 
+		toplam_kdv_8 = float("{0:.2f}".format(toplam_kdv_8 / 100 * 8))  
+		toplam_kdv_18 = float("{0:.2f}".format(toplam_kdv_18 / 100 * 18)) 
+		toplam_genel = float(toplam_kdvsiz) + toplam_kdv_1 + toplam_kdv_8 + toplam_kdv_18;
 
-		aTuple=(rows,toplam_kdvsiz, toplam_kdv_1,toplam_kdv_8,toplam_kdv_18, toplam_genel)
+		aTuple=(rows,toplam_kdvsiz, toplam_kdv_1 ,toplam_kdv_8,toplam_kdv_18, toplam_genel)
 	return aTuple
