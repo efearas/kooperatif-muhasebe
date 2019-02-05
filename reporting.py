@@ -615,7 +615,7 @@ def rapor_faturalar_kisi_fatura_detayi_yeni(_yil, _ay, _kisiID, page):
 	LIMIT {limit}  
 				"""
 	# 
-	page_size=18
+	page_size=10
 	query = query.format(yil = _yil, ay = _ay,last_day_of_month =str( _last_day_of_month), kisi_id = _kisiID, offset =  (int(page)-1)*page_size, limit = page_size)
 	
 	with connection.cursor() as cursor:
