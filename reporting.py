@@ -4,7 +4,7 @@ import pdb
 import datetime
 import random
 import calendar
-
+from decimal import *
 
 def rapor_aylik_urun_satis():
 	# son 6 aydaki urun bazinda satislar
@@ -581,8 +581,8 @@ def rapor_faturalar_kisi_fatura_detayi_yeni(_yil, _ay, _kisiID, page):
     ),
 	
     UrunFiyat AS(
-       SELECT   koopmuhasebe_urun.id AS urunIDsi, UrunNihaiFiyat.fiyat AS urunFiyati, koopmuhasebe_urun.urun_adi,koopmuhasebe_kdvkategorisi.kdv_orani
-        		from koopmuhasebe_urun
+       SELECT   koopmuhasebe_urun.id AS urunIDsi, UrunNihaiFiyat.fiyat AS urunFiyati, koopmuhasebe_urun.urun_adi,koopmuhasebe_kdvkategorisi.kdv_orani, koopmuhasebe_urun.birim_id
+        		FROM koopmuhasebe_urun
 				INNER JOIN UrunNihaiFiyat 
 				ON UrunNihaiFiyat.urun_id = koopmuhasebe_urun.id
         		LEFT OUTER JOIN koopmuhasebe_kdvkategorisi
@@ -606,7 +606,8 @@ def rapor_faturalar_kisi_fatura_detayi_yeni(_yil, _ay, _kisiID, page):
 	UrunFiyat.urun_adi, 
 	UrunFiyat.kdv_orani,
 	(BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.countOfSales* round(UrunFiyat.urunFiyati/(1+(UrunFiyat.kdv_orani::float/100))::numeric,2)) AS toplam_tutar,
-	UrunFiyat.urunFiyati
+	UrunFiyat.urunFiyati,
+	UrunFiyat.birim_id	
     FROM BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar
     INNER JOIN UrunFiyat
     ON BelirliTarihlerArasindaBirKisiyeYapilanButunSatislar.urun_id = UrunFiyat.urunIDsi
@@ -627,25 +628,42 @@ def rapor_faturalar_kisi_fatura_detayi_yeni(_yil, _ay, _kisiID, page):
 		toplam_kdv_18=0
 		toplam_genel=0
 		for row in cursor.fetchall():
+			urun_miktari = Decimal(row[0])
+			if row[6] == 1:#gr ile satiliyor				
+				urun_miktari = urun_miktari/1000
+				#urun_miktari = float("{0:.2f}".format(urun_miktari))
+			
+
 			kdv_orani = ' %' + str(row[3])
-			toplam_kdvsiz = toplam_kdvsiz +  row[1]*row[0]
-			toplam_genel = toplam_genel + row[5]*row[0]
+			toplam_kdvsiz = toplam_kdvsiz +  row[1]*urun_miktari
+			toplam_genel = toplam_genel + row[5]*urun_miktari
 			if row[3] == 1:
-				toplam_kdv_1 =  toplam_kdv_1 + row[1]*row[0]
+				toplam_kdv_1 =  toplam_kdv_1 + row[1]*urun_miktari
 				#toplam_kdv_1 = toplam_kdv_1 + (row[5]-row[1])*row[0]
 			if row[3] == 8:
-				toplam_kdv_8 =  toplam_kdv_8 + row[1]*row[0]
+				toplam_kdv_8 =  toplam_kdv_8 + row[1]*urun_miktari
 				#toplam_kdv_8 = toplam_kdv_8 +  (row[5]-row[1])*row[0]
 			if row[3] == 18:
-				toplam_kdv_18 =  toplam_kdv_18 + row[1]*row[0]
+				toplam_kdv_18 =  toplam_kdv_18 + row[1]*urun_miktari
 				#toplam_kdv_18 = toplam_kdv_18 +  (row[5]-row[1])*row[0]
 			aciklama = row[2] + ' ' + kdv_orani
-			adet = str(row[0]) + ' adet'
-			rows.append([aciklama, adet, row[1], row[4],  ])
+			adet = 0
+			if row[6] == 1:#gr ile satiliyor				
+				adet = str(urun_miktari) + ' kg'
+				adet = adet.replace('.',',')
+			if row[6] == 2:#adet ile satiliyor				
+				adet = str(urun_miktari) + ' adet'
+			satir_sonu_tutari = row[4]#adet ile satiliyr
+			if row[6] == 1:#gr ile satiliyor				
+				satir_sonu_tutari = satir_sonu_tutari /1000
+
+			#rows.append([aciklama, adet, row[1], satir_sonu_tutari ])
+			rows.append([aciklama, adet, row[1], float("{0:.2f}".format(satir_sonu_tutari)) ])
+
 		toplam_kdv_1 =  float("{0:.2f}".format(toplam_kdv_1 / 100)) 
 		toplam_kdv_8 = float("{0:.2f}".format(toplam_kdv_8 / 100 * 8))  
 		toplam_kdv_18 = float("{0:.2f}".format(toplam_kdv_18 / 100 * 18)) 
-		toplam_genel = float(toplam_kdvsiz) + toplam_kdv_1 + toplam_kdv_8 + toplam_kdv_18;
+		toplam_genel = float("{0:.2f}".format(toplam_kdvsiz)) + toplam_kdv_1 + toplam_kdv_8 + toplam_kdv_18
 
-		aTuple=(rows,toplam_kdvsiz, toplam_kdv_1 ,toplam_kdv_8,toplam_kdv_18, toplam_genel)
+		aTuple=(rows,float("{0:.2f}".format(toplam_kdvsiz)), toplam_kdv_1 ,toplam_kdv_8,toplam_kdv_18, toplam_genel)
 	return aTuple
