@@ -472,7 +472,7 @@ def random_kisi_getir():
 		cursor.execute(query)
 		rows = []
 		for row in cursor.fetchall():
-			if row[0] not in [2,3,12,15]:
+			if row[0] not in [2,3,12,15,13,21,20]:
 				rows.append([row[0], ])
 	random_id =  rows[random.randint(0,len(rows)-1)][0]
 	return random_id
